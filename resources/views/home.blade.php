@@ -6,7 +6,8 @@
 <!-- Offers & Discounts Cards -->
 <section class="py-4" style="margin-top: 56px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
     <div class="container">
-        <div class="row g-3">
+        <!-- Desktop Layout -->
+        <div class="row g-3 d-none d-md-flex">
             @forelse($banners as $banner)
             <div class="col-md-6 col-lg-3">
                 <div class="card offer-card h-100 border-0 shadow-sm position-relative" 
@@ -77,6 +78,87 @@
                             <i class="bi bi-star fs-3"></i>
                         </div>
                         <p class="card-text mb-3">Extra 20% off on first order</p>
+                        <a href="{{ route('register') }}" class="btn btn-light btn-sm fw-bold">
+                            Sign Up
+                        </a>
+                    </div>
+                </div>
+            </div>
+            @endforelse
+        </div>
+        
+        <!-- Mobile Layout -->
+        <div class="d-md-none mobile-offers-scroll">
+            @forelse($banners as $banner)
+            <div class="mobile-offer-card">
+                <div class="card offer-card h-100 border-0 shadow-sm position-relative" 
+                     style="@if($banner->image) background: url('{{ asset('banners/' . $banner->image) }}') center/cover; @else background: linear-gradient(135deg, {{ $banner->gradient_from ?? '#667eea' }} 0%, {{ $banner->gradient_to ?? '#764ba2' }} 100%); @endif">
+                    @if($banner->image)
+                        <div class="position-absolute w-100 h-100" style="background: rgba(0,0,0,0.5); border-radius: 15px;"></div>
+                    @endif
+                    <div class="card-body text-white p-3 position-relative">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="card-title fw-bold mb-0">{{ $banner->title }}</h6>
+                            <i class="bi bi-percent fs-4"></i>
+                        </div>
+                        <p class="card-text mb-2 small">{{ $banner->description }}</p>
+                        <a href="{{ $banner->button_link }}" class="btn btn-light btn-sm fw-bold">
+                            {{ $banner->button_text }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+            @empty
+            <div class="mobile-offer-card">
+                <div class="card offer-card h-100 border-0 shadow-sm" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);">
+                    <div class="card-body text-white p-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="card-title fw-bold mb-0">50% OFF</h6>
+                            <i class="bi bi-fire fs-4"></i>
+                        </div>
+                        <p class="card-text mb-2 small">On all summer collection items</p>
+                        <a href="{{ route('products.index') }}" class="btn btn-light btn-sm fw-bold">
+                            Shop Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="mobile-offer-card">
+                <div class="card offer-card h-100 border-0 shadow-sm" style="background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);">
+                    <div class="card-body text-white p-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="card-title fw-bold mb-0">Free Shipping</h6>
+                            <i class="bi bi-truck fs-4"></i>
+                        </div>
+                        <p class="card-text mb-2 small">On orders above ₹999</p>
+                        <a href="{{ route('products.index') }}" class="btn btn-light btn-sm fw-bold">
+                            Explore
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="mobile-offer-card">
+                <div class="card offer-card h-100 border-0 shadow-sm" style="background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);">
+                    <div class="card-body text-white p-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="card-title fw-bold mb-0">Buy 2 Get 1</h6>
+                            <i class="bi bi-gift fs-4"></i>
+                        </div>
+                        <p class="card-text mb-2 small">On selected categories</p>
+                        <a href="{{ route('products.index') }}" class="btn btn-light btn-sm fw-bold">
+                            View Deals
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="mobile-offer-card">
+                <div class="card offer-card h-100 border-0 shadow-sm" style="background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%);">
+                    <div class="card-body text-white p-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="card-title fw-bold mb-0">New User</h6>
+                            <i class="bi bi-star fs-4"></i>
+                        </div>
+                        <p class="card-text mb-2 small">Extra 20% off on first order</p>
                         <a href="{{ route('register') }}" class="btn btn-light btn-sm fw-bold">
                             Sign Up
                         </a>
@@ -311,6 +393,27 @@
     .offer-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 15px 30px rgba(0,0,0,0.2) !important;
+    }
+    
+    /* Mobile offers scroll */
+    .mobile-offers-scroll {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-height: 400px;
+        overflow-y: auto;
+        padding-right: 10px;
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE and Edge */
+    }
+    
+    .mobile-offers-scroll::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Opera */
+    }
+    
+    .mobile-offer-card {
+        flex-shrink: 0;
+        width: 100%;
     }
 </style>
 @endpush
