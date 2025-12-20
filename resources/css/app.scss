@@ -1,0 +1,84 @@
+// Bootstrap
+@import 'bootstrap/scss/bootstrap';
+
+// Custom styles
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+// Custom variables
+:root {
+    --aura-purple: #7c3aed;
+    --aura-pink: #ec4899;
+    --aura-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+.aura-bg-gradient {
+    background: var(--aura-gradient);
+}
+
+.aura-btn-primary {
+    background-color: var(--aura-purple);
+    border-color: var(--aura-purple);
+    &:hover {
+        background-color: #6d28d9;
+        border-color: #6d28d9;
+    }
+}
+
+
+.aura-btn-primary {
+    background-color: var(--aura-purple);
+    border-color: var(--aura-purple);
+    &:hover {
+        background-color: #6d28d9;
+        border-color: #6d28d9;
+    }
+}
+
+.aura-badge {
+    background-color: rgba(124, 58, 237, 0.1);
+    color: var(--aura-purple);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+}
+
+// AI Concierge Modal
+.ai-modal {
+    .modal-content {
+        border-radius: 20px;
+        border: none;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    .modal-header {
+        border-bottom: 1px solid #e9ecef;
+        padding: 1.5rem 2rem;
+    }
+    .modal-body {
+        padding: 2rem;
+    }
+}
+
+// Product Cards
+.product-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+    
+    &:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .card-img-top {
+        height: 300px;
+        object-fit: cover;
+    }
+}
