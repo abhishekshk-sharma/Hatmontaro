@@ -91,7 +91,7 @@
         <div class="d-md-none mobile-offers-scroll">
             @forelse($banners as $banner)
             <div class="mobile-offer-card">
-                <div class="card offer-card h-100 border-0 shadow-sm position-relative" 
+                <div class="card offer-card border-0 shadow-sm position-relative" 
                      style="@if($banner->image) background: url('{{ asset('banners/' . $banner->image) }}') center/cover; @else background: linear-gradient(135deg, {{ $banner->gradient_from ?? '#667eea' }} 0%, {{ $banner->gradient_to ?? '#764ba2' }} 100%); @endif">
                     @if($banner->image)
                         <div class="position-absolute w-100 h-100" style="background: rgba(0,0,0,0.5); border-radius: 15px;"></div>
@@ -110,7 +110,7 @@
             </div>
             @empty
             <div class="mobile-offer-card">
-                <div class="card offer-card h-100 border-0 shadow-sm" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);">
+                <div class="card offer-card border-0 shadow-sm" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);">
                     <div class="card-body text-white p-3">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <h6 class="card-title fw-bold mb-0">50% OFF</h6>
@@ -124,7 +124,7 @@
                 </div>
             </div>
             <div class="mobile-offer-card">
-                <div class="card offer-card h-100 border-0 shadow-sm" style="background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);">
+                <div class="card offer-card border-0 shadow-sm" style="background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);">
                     <div class="card-body text-white p-3">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <h6 class="card-title fw-bold mb-0">Free Shipping</h6>
@@ -138,7 +138,7 @@
                 </div>
             </div>
             <div class="mobile-offer-card">
-                <div class="card offer-card h-100 border-0 shadow-sm" style="background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);">
+                <div class="card offer-card border-0 shadow-sm" style="background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);">
                     <div class="card-body text-white p-3">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <h6 class="card-title fw-bold mb-0">Buy 2 Get 1</h6>
@@ -152,7 +152,7 @@
                 </div>
             </div>
             <div class="mobile-offer-card">
-                <div class="card offer-card h-100 border-0 shadow-sm" style="background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%);">
+                <div class="card offer-card border-0 shadow-sm" style="background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%);">
                     <div class="card-body text-white p-3">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <h6 class="card-title fw-bold mb-0">New User</h6>
@@ -254,6 +254,67 @@
                 </div>
             @endforelse
         </div>
+    </div>
+</section>
+
+<!-- All Products Section -->
+<section class="py-5 bg-white">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-2">Explore All Products</h2>
+                <p class="text-muted mb-0">Discover our complete fashion collection</p>
+            </div>
+            <a href="{{ route('products.index') }}" class="btn btn-primary">
+                View All <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+        
+        @php
+            $allProducts = \App\Models\Product::with('category')
+                ->inRandomOrder()
+                ->get()
+                ->chunk(15);
+        @endphp
+        
+        @foreach($allProducts as $productChunk)
+            <div class="row g-3 mb-4">
+                @foreach($productChunk as $product)
+                    <div class="col-6 col-md-4 col-lg-1">
+                        <a href="{{ route('products.show', $product) }}" class="text-decoration-none">
+                            <div class="card product-card border-0 h-100">
+                                <div class="position-relative">
+                                    <img src="{{ $product->image_url }}" 
+                                         class="card-img-top" 
+                                         alt="{{ $product->name }}"
+                                         style="height: 120px; object-fit: cover;">
+                                    
+                                    @if($product->is_ai_recommended)
+                                        <span class="position-absolute top-0 end-0 m-1">
+                                            <span class="badge bg-primary" style="font-size: 0.6rem;">AI</span>
+                                        </span>
+                                    @endif
+                                    
+                                    @if($product->is_featured)
+                                        <span class="position-absolute top-0 start-0 m-1">
+                                            <span class="badge bg-warning text-dark" style="font-size: 0.6rem;">★</span>
+                                        </span>
+                                    @endif
+                                </div>
+                                
+                                <div class="card-body p-2">
+                                    <h6 class="card-title mb-1 text-dark" style="font-size: 0.75rem;">{{ Str::limit($product->name, 15) }}</h6>
+                                    <small class="text-muted d-block mb-1" style="font-size: 0.65rem;">{{ $product->category->name ?? 'Fashion' }}</small>
+                                    <div class="text-center">
+                                        <span class="fw-bold text-primary" style="font-size: 0.7rem;">₹{{ number_format($product->price) }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                @endforeach
+            </div>
+        @endforeach
     </div>
 </section>
 
@@ -396,11 +457,10 @@
     /* Mobile offers scroll */
     .mobile-offers-scroll {
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         gap: 12px;
-        max-height: 400px;
-        overflow-y: auto;
-        padding-right: 10px;
+        overflow-x: auto;
+        padding-bottom: 10px;
         scrollbar-width: none; /* Firefox */
         -ms-overflow-style: none; /* IE and Edge */
     }
@@ -411,7 +471,12 @@
     
     .mobile-offer-card {
         flex-shrink: 0;
-        width: 100%;
+        width: 200px;
+        height: 280px;
+    }
+    
+    .mobile-offer-card .card {
+        height: 100%;
     }
 </style>
 @endpush
