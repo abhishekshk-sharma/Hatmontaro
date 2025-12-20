@@ -47,40 +47,39 @@
         <div class="row g-4">
             @foreach($products as $product)
                 <div class="col-md-6 col-lg-3">
-                    <div class="card product-card h-100">
-                        <div class="position-relative">
-                            <img src="{{ $product->image_url }}" 
-                                 class="card-img-top" 
-                                 alt="{{ $product->name }}"
-                                 style="height: 250px; object-fit: cover;">
-                            
-                            <span class="position-absolute top-0 end-0 m-2">
-                                <span class="badge bg-primary">
-                                    <i class="bi bi-robot me-1"></i>AI Pick
+                    <a href="{{ route('products.show', $product) }}" class="text-decoration-none">
+                        <div class="card product-card h-100">
+                            <div class="position-relative">
+                                <img src="{{ $product->image_url }}" 
+                                     class="card-img-top" 
+                                     alt="{{ $product->name }}"
+                                     style="height: 250px; object-fit: cover;">
+                                
+                                <span class="position-absolute top-0 end-0 m-2">
+                                    <span class="badge bg-primary">
+                                        <i class="bi bi-robot me-1"></i>AI Pick
+                                    </span>
                                 </span>
-                            </span>
-                        </div>
-                        
-                        <div class="card-body">
-                            <h5 class="card-title">{{ $product->name }}</h5>
-                            <p class="card-text text-muted small">
-                                {{ Str::limit($product->description, 80) }}
-                            </p>
-                            
-                            <div class="d-flex justify-content-between align-items-center mt-3">
-                                <span class="h5 fw-bold text-primary">₹{{ number_format($product->price, 2) }}</span>
-                                <a href="{{ route('products.show', $product) }}" class="btn btn-sm btn-primary">
-                                    View Details
-                                </a>
                             </div>
                             
-                            <div class="mt-2">
-                                <small class="text-muted">
-                                    <i class="bi bi-tag me-1"></i>{{ $product->category->name ?? '' }}
-                                </small>
+                            <div class="card-body">
+                                <h5 class="card-title text-dark">{{ $product->name }}</h5>
+                                <p class="card-text text-muted small">
+                                    {{ Str::limit($product->description, 80) }}
+                                </p>
+                                
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <span class="h5 fw-bold text-primary">₹{{ number_format($product->price, 2) }}</span>
+                                </div>
+                                
+                                <div class="mt-2">
+                                    <small class="text-muted">
+                                        <i class="bi bi-tag me-1"></i>{{ $product->category->name ?? '' }}
+                                    </small>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
             @endforeach
         </div>

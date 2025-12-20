@@ -32,11 +32,21 @@
             border: none;
             border-radius: 15px;
             overflow: hidden;
+            cursor: pointer;
         }
         
         .product-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+        }
+        
+        /* Ensure clickable cards maintain text colors */
+        a .product-card .card-title {
+            color: inherit !important;
+        }
+        
+        a:hover .product-card .card-title {
+            color: #7c3aed !important;
         }
         
         .btn-primary {
