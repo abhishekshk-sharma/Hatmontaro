@@ -143,7 +143,7 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
         <div class="container">
             <a class="navbar-brand fw-bold fs-3" href="{{ route('home') }}" style="color: #7c3aed;">
-                Aksharam Fashion is so good
+                Aksharam Fashion
             </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
