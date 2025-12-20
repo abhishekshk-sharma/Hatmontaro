@@ -56,12 +56,14 @@
                                     <td>
                                         <a href="{{ route('admin.about.team.edit', $member->id) }}" class="btn btn-sm btn-primary">
                                             <i class="fas fa-edit"></i>
+                                            Edit
                                         </a>
                                         <form action="{{ route('admin.about.team.destroy', $member->id) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this member?')">
                                                 <i class="fas fa-trash"></i>
+                                                Delete
                                             </button>
                                         </form>
                                     </td>

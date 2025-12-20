@@ -184,30 +184,29 @@
         <div class="row g-3">
             @foreach($categoryData['products'] as $product)
                 <div class="col-6 col-md-3 col-lg-2">
-                    <div class="card product-card border-0 h-100">
-                        <div class="position-relative">
-                            <img src="{{ $product->image_url }}" 
-                                 class="card-img-top" 
-                                 alt="{{ $product->name }}"
-                                 style="height: 180px; object-fit: cover;">
+                    <a href="{{ route('products.show', $product) }}" class="text-decoration-none">
+                        <div class="card product-card border-0 h-100">
+                            <div class="position-relative">
+                                <img src="{{ $product->image_url }}" 
+                                     class="card-img-top" 
+                                     alt="{{ $product->name }}"
+                                     style="height: 180px; object-fit: cover;">
+                                
+                                @if($product->is_ai_recommended)
+                                    <span class="position-absolute top-0 end-0 m-2">
+                                        <span class="badge bg-primary">AI Pick</span>
+                                    </span>
+                                @endif
+                            </div>
                             
-                            @if($product->is_ai_recommended)
-                                <span class="position-absolute top-0 end-0 m-2">
-                                    <span class="badge bg-primary">AI Pick</span>
-                                </span>
-                            @endif
-                        </div>
-                        
-                        <div class="card-body p-3">
-                            <h6 class="card-title mb-2">{{ Str::limit($product->name, 30) }}</h6>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="fw-bold text-primary">₹{{ number_format($product->price) }}</span>
-                                <a href="{{ route('products.show', $product) }}" class="btn btn-sm btn-outline-primary">
-                                    View
-                                </a>
+                            <div class="card-body p-3">
+                                <h6 class="card-title mb-2 text-dark">{{ Str::limit($product->name, 30) }}</h6>
+                                <div class="d-flex justify-content-center align-items-center">
+                                    <span class="fw-bold text-primary">₹{{ number_format($product->price) }}</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
             @endforeach
         </div>
@@ -226,28 +225,27 @@
         <div class="row g-3">
             @forelse($featuredProducts as $product)
                 <div class="col-6 col-md-3 col-lg-2">
-                    <div class="card product-card border-0  h-100">
-                        <div class="position-relative">
-                            <img src="{{ $product->image_url }}" 
-                                 class="card-img-top" 
-                                 alt="{{ $product->name }}"
-                                 style="height: 180px; object-fit: cover;">
+                    <a href="{{ route('products.show', $product) }}" class="text-decoration-none">
+                        <div class="card product-card border-0  h-100">
+                            <div class="position-relative">
+                                <img src="{{ $product->image_url }}" 
+                                     class="card-img-top" 
+                                     alt="{{ $product->name }}"
+                                     style="height: 180px; object-fit: cover;">
+                                
+                                <span class="position-absolute top-0 end-0 m-2">
+                                    <span class="badge bg-success">AI Recommended</span>
+                                </span>
+                            </div>
                             
-                            <span class="position-absolute top-0 end-0 m-2">
-                                <span class="badge bg-success">AI Recommended</span>
-                            </span>
-                        </div>
-                        
-                        <div class="card-body p-3">
-                            <h6 class="card-title mb-2">{{ Str::limit($product->name, 30) }}</h6>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="fw-bold text-primary">₹{{ number_format($product->price) }}</span>
-                                <a href="{{ route('products.show', $product) }}" class="btn btn-sm btn-outline-primary">
-                                    View
-                                </a>
+                            <div class="card-body p-3">
+                                <h6 class="card-title mb-2 text-dark">{{ Str::limit($product->name, 30) }}</h6>
+                                <div class="d-flex justify-content-center align-items-center">
+                                    <span class="fw-bold text-primary">₹{{ number_format($product->price) }}</span>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
             @empty
                 <div class="col-12 text-center py-4">

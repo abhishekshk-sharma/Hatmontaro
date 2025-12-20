@@ -113,62 +113,46 @@
                 <div class="row g-4">
                     @foreach($products as $product)
                         <div class="col-md-6 col-lg-4">
-                            <div class="card h-100 shadow-sm hover-shadow-lg transition">
-                                <!-- Product Image -->
-                                <div class="position-relative overflow-hidden" style="height: 250px;">
-                                    <img src="{{ $product->image_url }}" alt="{{ $product->name }}" 
-                                         class="card-img-top w-100 h-100 object-fit-cover">
-                                    @if($product->is_featured)
-                                        <span class="badge bg-danger position-absolute top-0 end-0 m-2">Featured</span>
-                                    @endif
-                                    @if($product->is_ai_recommended)
-                                        <span class="badge bg-info position-absolute bottom-0 start-0 m-2">AI Pick</span>
-                                    @endif
-                                </div>
-
-                                <!-- Product Info -->
-                                <div class="card-body">
-                                    <h6 class="card-title fw-bold text-truncate">
-                                        <a href="{{ route('products.show', $product) }}" class="text-decoration-none text-dark">
-                                            {{ $product->name }}
-                                        </a>
-                                    </h6>
-                                    <p class="text-muted small mb-2">{{ $product->category->name }}</p>
-                                    
-                                    <!-- Price -->
-                                    <div class="mb-3">
-                                        <span class="h5 fw-bold text-primary">₹{{ number_format($product->price, 2) }}</span>
-                                        @if($product->compare_price)
-                                            <span class="text-muted text-decoration-line-through">
-                                                ₹{{ number_format($product->compare_price, 2) }}
-                                            </span>
+                            <a href="{{ route('products.show', $product) }}" class="text-decoration-none">
+                                <div class="card h-100 shadow-sm hover-shadow-lg transition">
+                                    <!-- Product Image -->
+                                    <div class="position-relative overflow-hidden" style="height: 250px;">
+                                        <img src="{{ $product->image_url }}" alt="{{ $product->name }}" 
+                                             class="card-img-top w-100 h-100 object-fit-cover">
+                                        @if($product->is_featured)
+                                            <span class="badge bg-danger position-absolute top-0 end-0 m-2">Featured</span>
+                                        @endif
+                                        @if($product->is_ai_recommended)
+                                            <span class="badge bg-info position-absolute bottom-0 start-0 m-2">AI Pick</span>
                                         @endif
                                     </div>
 
-                                    <!-- Stock Status -->
-                                    @if($product->stock_quantity > 0)
-                                        <small class="text-success">In Stock ({{ $product->stock_quantity }})</small>
-                                    @else
-                                        <small class="text-danger">Out of Stock</small>
-                                    @endif
-                                </div>
+                                    <!-- Product Info -->
+                                    <div class="card-body">
+                                        <h6 class="card-title fw-bold text-truncate text-dark">
+                                            {{ $product->name }}
+                                        </h6>
+                                        <p class="text-muted small mb-2">{{ $product->category->name }}</p>
+                                        
+                                        <!-- Price -->
+                                        <div class="mb-3">
+                                            <span class="h5 fw-bold text-primary">₹{{ number_format($product->price, 2) }}</span>
+                                            @if($product->compare_price)
+                                                <span class="text-muted text-decoration-line-through">
+                                                    ₹{{ number_format($product->compare_price, 2) }}
+                                                </span>
+                                            @endif
+                                        </div>
 
-                                <!-- Action Buttons -->
-                                <div class="card-footer bg-white border-top">
-                                    <a href="{{ route('products.show', $product) }}" class="btn btn-outline-primary btn-sm w-100 mb-2">
-                                        View Details
-                                    </a>
-                                    @if($product->stock_quantity > 0)
-                                        <form action="{{ route('cart.add', $product) }}" method="POST" class="d-inline w-100">
-                                            @csrf
-                                            <input type="hidden" name="quantity" value="1">
-                                            <button type="submit" class="btn btn-primary btn-sm w-100">
-                                                <i class="bi bi-cart-plus"></i> Add to Cart
-                                            </button>
-                                        </form>
-                                    @endif
+                                        <!-- Stock Status -->
+                                        @if($product->stock_quantity > 0)
+                                            <small class="text-success">In Stock ({{ $product->stock_quantity }})</small>
+                                        @else
+                                            <small class="text-danger">Out of Stock</small>
+                                        @endif
+                                    </div>
                                 </div>
-                            </div>
+                            </a>
                         </div>
                     @endforeach
                 </div>
