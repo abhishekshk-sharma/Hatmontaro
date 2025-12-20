@@ -8,11 +8,21 @@
     <div class="container py-5">
         <div class="row align-items-center">
             <div class="col-lg-6 text-white">
-                <h1 class="display-4 fw-bold mb-4">About Aksharam Fashion</h1>
+                @php $heroSection = $sections->where('section', 'hero')->first(); @endphp
+                <h1 class="display-4 fw-bold mb-4">{{ $heroSection->title ?? 'About Aksharam Fashion' }}</h1>
                 <p class="lead mb-4">
-                    Revolutionizing fashion retail with AI-powered personalization and cutting-edge technology. 
-                    We're not just selling clothes - we're crafting your perfect style story.
+                    {{ $heroSection->content ?? 'Revolutionizing fashion retail with AI-powered personalization and cutting-edge technology.' }}
                 </p>
+                @if($heroSection && $heroSection->extra_data && isset($heroSection->extra_data['stats']))
+                <div class="d-flex gap-3">
+                    @foreach($heroSection->extra_data['stats'] as $stat)
+                    <div class="text-center">
+                        <h3 class="fw-bold">{{ $stat['value'] }}</h3>
+                        <small>{{ $stat['label'] }}</small>
+                    </div>
+                    @endforeach
+                </div>
+                @else
                 <div class="d-flex gap-3">
                     <div class="text-center">
                         <h3 class="fw-bold">10K+</h3>
@@ -27,9 +37,10 @@
                         <small>AI Accuracy</small>
                     </div>
                 </div>
+                @endif
             </div>
             <div class="col-lg-6 mt-4 mt-lg-0">
-                <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                <img src="{{ $heroSection && $heroSection->image ? asset('storage/' . $heroSection->image) : 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80' }}" 
                      class="img-fluid rounded-4 shadow-lg" alt="Fashion Store">
             </div>
         </div>
@@ -98,16 +109,15 @@
     <div class="container py-5">
         <div class="row g-5">
             <div class="col-lg-6">
+                @php $missionSection = $sections->where('section', 'mission')->first(); @endphp
                 <div class="card border-0 h-100 p-4" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);">
                     <div class="card-body text-white">
                         <div class="d-flex align-items-center mb-4">
                             <i class="bi bi-bullseye fs-1 me-3"></i>
-                            <h3 class="fw-bold mb-0">Our Mission</h3>
+                            <h3 class="fw-bold mb-0">{{ $missionSection->title ?? 'Our Mission' }}</h3>
                         </div>
                         <p class="lead">
-                            To revolutionize the fashion industry by combining artificial intelligence 
-                            with human creativity, making personalized style accessible to everyone while 
-                            promoting sustainable and ethical fashion practices.
+                            {{ $missionSection->content ?? 'To revolutionize the fashion industry by combining artificial intelligence with human creativity.' }}
                         </p>
                         <ul class="list-unstyled">
                             <li class="mb-2"><i class="bi bi-check-circle-fill me-2"></i>AI-Powered Personalization</li>
@@ -119,16 +129,15 @@
                 </div>
             </div>
             <div class="col-lg-6">
+                @php $visionSection = $sections->where('section', 'vision')->first(); @endphp
                 <div class="card border-0 h-100 p-4" style="background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);">
                     <div class="card-body text-white">
                         <div class="d-flex align-items-center mb-4">
                             <i class="bi bi-eye fs-1 me-3"></i>
-                            <h3 class="fw-bold mb-0">Our Vision</h3>
+                            <h3 class="fw-bold mb-0">{{ $visionSection->title ?? 'Our Vision' }}</h3>
                         </div>
                         <p class="lead">
-                            To become the world's leading AI-driven fashion platform, where technology 
-                            and style converge to create unique, personalized experiences that inspire 
-                            confidence and self-expression in every individual.
+                            {{ $visionSection->content ?? 'To become the world\'s leading AI-driven fashion platform.' }}
                         </p>
                         <ul class="list-unstyled">
                             <li class="mb-2"><i class="bi bi-check-circle-fill me-2"></i>Global Fashion Leader</li>
@@ -154,161 +163,48 @@
         </div>
         
         <div class="row g-4">
-            <!-- CEO -->
+            @forelse($teamMembers as $member)
             <div class="col-lg-4 col-md-6">
                 <div class="card border-0 shadow-sm h-100 team-card">
                     <div class="card-body text-center p-4">
                         <div class="position-relative mb-4">
-                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" 
-                                 class="rounded-circle shadow" alt="CEO" style="width: 120px; height: 120px; object-fit: cover;">
-                            <div class="position-absolute bottom-0 end-0 bg-primary rounded-circle p-2">
-                                <i class="bi bi-crown text-white"></i>
+                            @if($member->image)
+                                <img src="{{ asset('storage/' . $member->image) }}" 
+                                     class="rounded-circle shadow" alt="{{ $member->name }}" style="width: 120px; height: 120px; object-fit: cover;"
+                                     onerror="this.src='https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80'">
+                            @else
+                                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" 
+                                     class="rounded-circle shadow" alt="{{ $member->name }}" style="width: 120px; height: 120px; object-fit: cover;">
+                            @endif
+                            <div class="position-absolute bottom-0 end-0 rounded-circle p-2" style="background-color: {{ $member->color }};">
+                                <i class="{{ $member->icon }} text-white"></i>
                             </div>
                         </div>
-                        <h4 class="fw-bold">Arjun Sharma</h4>
-                        <p class="text-primary fw-semibold mb-3">Chief Executive Officer</p>
+                        <h4 class="fw-bold">{{ $member->name }}</h4>
+                        <p class="fw-semibold mb-3" style="color: {{ $member->color }};">{{ $member->position }}</p>
                         <p class="text-muted mb-4">
-                            Visionary leader with 15+ years in fashion tech. Former VP at major fashion retailers, 
-                            passionate about democratizing style through AI.
+                            {{ $member->description }}
                         </p>
                         <div class="d-flex justify-content-center gap-3">
-                            <a href="#" class="text-primary"><i class="bi bi-linkedin fs-5"></i></a>
-                            <a href="#" class="text-primary"><i class="bi bi-twitter fs-5"></i></a>
-                            <a href="#" class="text-primary"><i class="bi bi-envelope fs-5"></i></a>
+                            @if($member->linkedin_url)
+                            <a href="{{ $member->linkedin_url }}" style="color: {{ $member->color }};"><i class="bi bi-linkedin fs-5"></i></a>
+                            @endif
+                            @if($member->twitter_url)
+                            <a href="{{ $member->twitter_url }}" style="color: {{ $member->color }};"><i class="bi bi-twitter fs-5"></i></a>
+                            @endif
+                            @if($member->email)
+                            <a href="mailto:{{ $member->email }}" style="color: {{ $member->color }};"><i class="bi bi-envelope fs-5"></i></a>
+                            @endif
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- CTO -->
-            <div class="col-lg-4 col-md-6">
-                <div class="card border-0 shadow-sm h-100 team-card">
-                    <div class="card-body text-center p-4">
-                        <div class="position-relative mb-4">
-                            <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" 
-                                 class="rounded-circle shadow" alt="CTO" style="width: 120px; height: 120px; object-fit: cover;">
-                            <div class="position-absolute bottom-0 end-0 bg-success rounded-circle p-2">
-                                <i class="bi bi-cpu text-white"></i>
-                            </div>
-                        </div>
-                        <h4 class="fw-bold">Priya Patel</h4>
-                        <p class="text-success fw-semibold mb-3">Chief Technology Officer</p>
-                        <p class="text-muted mb-4">
-                            AI/ML expert with PhD in Computer Vision. Former Google AI researcher, 
-                            specializing in fashion recommendation systems and computer vision.
-                        </p>
-                        <div class="d-flex justify-content-center gap-3">
-                            <a href="#" class="text-success"><i class="bi bi-linkedin fs-5"></i></a>
-                            <a href="#" class="text-success"><i class="bi bi-github fs-5"></i></a>
-                            <a href="#" class="text-success"><i class="bi bi-envelope fs-5"></i></a>
-                        </div>
-                    </div>
-                </div>
+            @empty
+            <div class="col-12 text-center py-4">
+                <h5>No team members found</h5>
+                <p class="text-muted">Team members will appear here once added by admin.</p>
             </div>
-            
-            <!-- Head of Design -->
-            <div class="col-lg-4 col-md-6">
-                <div class="card border-0 shadow-sm h-100 team-card">
-                    <div class="card-body text-center p-4">
-                        <div class="position-relative mb-4">
-                            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" 
-                                 class="rounded-circle shadow" alt="Head of Design" style="width: 120px; height: 120px; object-fit: cover;">
-                            <div class="position-absolute bottom-0 end-0 bg-warning rounded-circle p-2">
-                                <i class="bi bi-palette text-white"></i>
-                            </div>
-                        </div>
-                        <h4 class="fw-bold">Rahul Gupta</h4>
-                        <p class="text-warning fw-semibold mb-3">Head of Design</p>
-                        <p class="text-muted mb-4">
-                            Creative director with 12+ years in fashion design. Former design lead at luxury brands, 
-                            expert in trend forecasting and user experience design.
-                        </p>
-                        <div class="d-flex justify-content-center gap-3">
-                            <a href="#" class="text-warning"><i class="bi bi-linkedin fs-5"></i></a>
-                            <a href="#" class="text-warning"><i class="bi bi-dribbble fs-5"></i></a>
-                            <a href="#" class="text-warning"><i class="bi bi-envelope fs-5"></i></a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Head of Marketing -->
-            <div class="col-lg-4 col-md-6">
-                <div class="card border-0 shadow-sm h-100 team-card">
-                    <div class="card-body text-center p-4">
-                        <div class="position-relative mb-4">
-                            <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" 
-                                 class="rounded-circle shadow" alt="Head of Marketing" style="width: 120px; height: 120px; object-fit: cover;">
-                            <div class="position-absolute bottom-0 end-0 bg-info rounded-circle p-2">
-                                <i class="bi bi-megaphone text-white"></i>
-                            </div>
-                        </div>
-                        <h4 class="fw-bold">Sneha Reddy</h4>
-                        <p class="text-info fw-semibold mb-3">Head of Marketing</p>
-                        <p class="text-muted mb-4">
-                            Digital marketing strategist with expertise in fashion e-commerce. 
-                            Former marketing director at leading fashion brands, growth hacking specialist.
-                        </p>
-                        <div class="d-flex justify-content-center gap-3">
-                            <a href="#" class="text-info"><i class="bi bi-linkedin fs-5"></i></a>
-                            <a href="#" class="text-info"><i class="bi bi-instagram fs-5"></i></a>
-                            <a href="#" class="text-info"><i class="bi bi-envelope fs-5"></i></a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Head of Operations -->
-            <div class="col-lg-4 col-md-6">
-                <div class="card border-0 shadow-sm h-100 team-card">
-                    <div class="card-body text-center p-4">
-                        <div class="position-relative mb-4">
-                            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" 
-                                 class="rounded-circle shadow" alt="Head of Operations" style="width: 120px; height: 120px; object-fit: cover;">
-                            <div class="position-absolute bottom-0 end-0 bg-danger rounded-circle p-2">
-                                <i class="bi bi-gear text-white"></i>
-                            </div>
-                        </div>
-                        <h4 class="fw-bold">Vikram Singh</h4>
-                        <p class="text-danger fw-semibold mb-3">Head of Operations</p>
-                        <p class="text-muted mb-4">
-                            Operations expert with 10+ years in supply chain management. 
-                            Former operations manager at major e-commerce platforms, logistics optimization specialist.
-                        </p>
-                        <div class="d-flex justify-content-center gap-3">
-                            <a href="#" class="text-danger"><i class="bi bi-linkedin fs-5"></i></a>
-                            <a href="#" class="text-danger"><i class="bi bi-twitter fs-5"></i></a>
-                            <a href="#" class="text-danger"><i class="bi bi-envelope fs-5"></i></a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Customer Success Manager -->
-            <div class="col-lg-4 col-md-6">
-                <div class="card border-0 shadow-sm h-100 team-card">
-                    <div class="card-body text-center p-4">
-                        <div class="position-relative mb-4">
-                            <img src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80" 
-                                 class="rounded-circle shadow" alt="Customer Success Manager" style="width: 120px; height: 120px; object-fit: cover;">
-                            <div class="position-absolute bottom-0 end-0 bg-purple rounded-circle p-2" style="background-color: #7c3aed;">
-                                <i class="bi bi-people text-white"></i>
-                            </div>
-                        </div>
-                        <h4 class="fw-bold">Ananya Joshi</h4>
-                        <p class="fw-semibold mb-3" style="color: #7c3aed;">Customer Success Manager</p>
-                        <p class="text-muted mb-4">
-                            Customer experience specialist with passion for fashion. 
-                            Expert in building customer relationships and ensuring satisfaction through personalized service.
-                        </p>
-                        <div class="d-flex justify-content-center gap-3">
-                            <a href="#" style="color: #7c3aed;"><i class="bi bi-linkedin fs-5"></i></a>
-                            <a href="#" style="color: #7c3aed;"><i class="bi bi-twitter fs-5"></i></a>
-                            <a href="#" style="color: #7c3aed;"><i class="bi bi-envelope fs-5"></i></a>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            @endforelse
         </div>
     </div>
 </section>

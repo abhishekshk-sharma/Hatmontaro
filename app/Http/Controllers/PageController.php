@@ -8,7 +8,9 @@ class PageController extends Controller
 {
     public function about()
     {
-        return view('pages.about');
+        $sections = \App\Models\AboutUs::where('is_active', true)->orderBy('sort_order')->get();
+        $teamMembers = \App\Models\TeamMember::where('is_active', true)->orderBy('sort_order')->get();
+        return view('pages.about', compact('sections', 'teamMembers'));
     }
 
     public function terms()

@@ -76,6 +76,9 @@
                         <a class="nav-link" href="{{ route('admin.banners.index') }}">Banners</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="{{ route('admin.about.index') }}">About Us</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="{{ route('admin.page-banners.index') }}">Page Banners</a>
                     </li>
                     <li class="nav-item">
