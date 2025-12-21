@@ -10,11 +10,11 @@ use Illuminate\Http\Request;
 class ProductController extends Controller
 {
     /**
-     * Display all products
+     * Display all products (caps only)
      */
     public function index(Request $request)
     {
-        $query = Product::query()->with('category');
+        $query = Product::query();
         
         // Search filter
         if ($request->filled('search')) {
@@ -28,26 +28,9 @@ class ProductController extends Controller
             });
         }
         
-        // Category filter
-        if ($request->filled('category')) {
-            if (is_numeric($request->category)) {
-                $query->where('category_id', $request->category);
-            } else {
-                $query->whereHas('category', function($q) use ($request) {
-                    $q->where('name', 'like', '%' . $request->category . '%')
-                      ->orWhere('slug', 'like', '%' . $request->category . '%');
-                });
-            }
-        }
-        
         // Style type filter
         if ($request->filled('style')) {
             $query->where('style_type', 'like', '%' . $request->style . '%');
-        }
-        
-        // Occasion filter
-        if ($request->filled('occasion')) {
-            $query->where('occasion', 'like', '%' . $request->occasion . '%');
         }
         
         // Brand filter
@@ -85,9 +68,8 @@ class ProductController extends Controller
         }
         
         $products = $query->paginate(12);
-        $categories = Category::all();
         
-        return view('products.index', compact('products', 'categories'));
+        return view('products.index', compact('products'));
     }
 
     /**
@@ -111,8 +93,7 @@ class ProductController extends Controller
             : collect();
         
         // Get similar products
-        $similarProducts = Product::where('category_id', $product->category_id)
-            ->where('id', '!=', $product->id)
+        $similarProducts = Product::where('id', '!=', $product->id)
             ->limit(4)
             ->get();
         
@@ -120,26 +101,17 @@ class ProductController extends Controller
     }
 
     /**
-     * Get products by category
+     * Caps products
      */
-    public function byCategory($category)
+    public function caps()
     {
-        // Handle both ID and slug
-        if (is_numeric($category)) {
-            $cat = Category::find($category);
-        } else {
-            $cat = Category::where('slug', $category)->firstOrFail();
-        }
-        
-        $products = Product::where('category_id', $cat->id)
-            ->paginate(12);
+        $products = Product::paginate(12);
             
-        $banner = PageBanner::where('page_type', 'category')
-            ->where('page_identifier', $cat->slug)
+        $banner = PageBanner::where('page_type', 'caps')
             ->where('is_active', true)
             ->first();
         
-        return view('products.category', compact('products', 'cat', 'banner'));
+        return view('products.caps', compact('products', 'banner'));
     }
 
     /**
@@ -147,8 +119,8 @@ class ProductController extends Controller
      */
     public function aiRecommended()
     {
-        $products = \App\Models\Product::where('is_ai_recommended', true)
-            ->orWhere('is_featured', true)  // Show featured if no AI recommended
+        $products = Product::where('is_ai_recommended', true)
+            ->orWhere('is_featured', true)
             ->paginate(12);
             
         $banner = PageBanner::where('page_type', 'ai-recommended')

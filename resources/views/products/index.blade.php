@@ -30,21 +30,7 @@
                         <div class="mb-3">
                             <label class="form-label">Search</label>
                             <input type="text" name="search" class="form-control" 
-                                   value="{{ request('search') }}" placeholder="Search products...">
-                        </div>
-                        
-                        <!-- Categories -->
-                        <div class="mb-3">
-                            <label class="form-label">Category</label>
-                            <select name="category" class="form-select">
-                                <option value="">All Categories</option>
-                                @foreach($categories as $category)
-                                    <option value="{{ $category->id }}" 
-                                            {{ request('category') == $category->id ? 'selected' : '' }}>
-                                        {{ $category->name }}
-                                    </option>
-                                @endforeach
-                            </select>
+                                   value="{{ request('search') }}" placeholder="Search caps...">
                         </div>
                         
                         <!-- Price Range -->
@@ -67,24 +53,36 @@
                             <label class="form-label">Style</label>
                             <select name="style" class="form-select">
                                 <option value="">All Styles</option>
-                                <option value="casual" {{ request('style') == 'casual' ? 'selected' : '' }}>Casual</option>
-                                <option value="formal" {{ request('style') == 'formal' ? 'selected' : '' }}>Formal</option>
-                                <option value="bohemian" {{ request('style') == 'bohemian' ? 'selected' : '' }}>Bohemian</option>
-                                <option value="minimalist" {{ request('style') == 'minimalist' ? 'selected' : '' }}>Minimalist</option>
-                                <option value="ethnic" {{ request('style') == 'ethnic' ? 'selected' : '' }}>Ethnic</option>
+                                <option value="baseball" {{ request('style') == 'baseball' ? 'selected' : '' }}>Baseball</option>
+                                <option value="snapback" {{ request('style') == 'snapback' ? 'selected' : '' }}>Snapback</option>
+                                <option value="beanie" {{ request('style') == 'beanie' ? 'selected' : '' }}>Beanie</option>
+                                <option value="trucker" {{ request('style') == 'trucker' ? 'selected' : '' }}>Trucker</option>
+                                <option value="bucket" {{ request('style') == 'bucket' ? 'selected' : '' }}>Bucket</option>
                             </select>
                         </div>
                         
-                        <!-- Occasion -->
+                        <!-- Brand -->
                         <div class="mb-3">
-                            <label class="form-label">Occasion</label>
-                            <select name="occasion" class="form-select">
-                                <option value="">All Occasions</option>
-                                <option value="casual" {{ request('occasion') == 'casual' ? 'selected' : '' }}>Casual</option>
-                                <option value="office" {{ request('occasion') == 'office' ? 'selected' : '' }}>Office</option>
-                                <option value="wedding" {{ request('occasion') == 'wedding' ? 'selected' : '' }}>Wedding</option>
-                                <option value="party" {{ request('occasion') == 'party' ? 'selected' : '' }}>Party</option>
-                                <option value="formal" {{ request('occasion') == 'formal' ? 'selected' : '' }}>Formal</option>
+                            <label class="form-label">Brand</label>
+                            <select name="brand" class="form-select">
+                                <option value="">All Brands</option>
+                                <option value="nike" {{ request('brand') == 'nike' ? 'selected' : '' }}>Nike</option>
+                                <option value="adidas" {{ request('brand') == 'adidas' ? 'selected' : '' }}>Adidas</option>
+                                <option value="new-era" {{ request('brand') == 'new-era' ? 'selected' : '' }}>New Era</option>
+                                <option value="puma" {{ request('brand') == 'puma' ? 'selected' : '' }}>Puma</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Color -->
+                        <div class="mb-3">
+                            <label class="form-label">Color</label>
+                            <select name="color" class="form-select">
+                                <option value="">All Colors</option>
+                                <option value="black" {{ request('color') == 'black' ? 'selected' : '' }}>Black</option>
+                                <option value="white" {{ request('color') == 'white' ? 'selected' : '' }}>White</option>
+                                <option value="blue" {{ request('color') == 'blue' ? 'selected' : '' }}>Blue</option>
+                                <option value="red" {{ request('color') == 'red' ? 'selected' : '' }}>Red</option>
+                                <option value="gray" {{ request('color') == 'gray' ? 'selected' : '' }}>Gray</option>
                             </select>
                         </div>
                         
@@ -98,7 +96,7 @@
         <!-- Products Grid -->
         <div class="col-lg-9">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h3 mb-0">Shop All Products</h1>
+                <h1 class="h3 mb-0">Shop All Caps</h1>
                 
                 <!-- Sorting -->
                 <div class="dropdown">
@@ -167,16 +165,18 @@
                                                     </small>
                                                 @endif
                                             </div>
-                                            
-                                            <div class="text-muted small">
-                                                <i class="bi bi-tag me-1"></i>{{ $product->category->name ?? 'Uncategorized' }}
-                                            </div>
                                         </div>
                                         
                                         <div class="mt-2">
-                                            <span class="badge bg-light text-dark">{{ $product->style_type }}</span>
-                                            <span class="badge bg-light text-dark">{{ $product->occasion }}</span>
-                                            <span class="badge bg-light text-dark">{{ $product->color }}</span>
+                                            @if($product->style_type)
+                                                <span class="badge bg-light text-dark">{{ $product->style_type }}</span>
+                                            @endif
+                                            @if($product->color)
+                                                <span class="badge bg-light text-dark">{{ $product->color }}</span>
+                                            @endif
+                                            @if($product->brand)
+                                                <span class="badge bg-light text-dark">{{ $product->brand }}</span>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
@@ -194,7 +194,7 @@
                     <div class="display-1 text-muted">
                         <i class="bi bi-search"></i>
                     </div>
-                    <h3>No products found</h3>
+                    <h3>No caps found</h3>
                     <p class="text-muted">Try adjusting your search or filter criteria</p>
                     <a href="{{ route('products.index') }}" class="btn btn-primary">Clear Filters</a>
                 </div>
