@@ -20,7 +20,7 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            /* padding-top: 76px;  */
+            /* padding-top: 76px;  */ 
             /* Adjust for fixed navbar height */
         }
         
