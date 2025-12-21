@@ -74,13 +74,21 @@ class AdminProductController extends Controller
                     $file->move(public_path('images/caps'), $filename);
                     $data['image_url'] = '/images/caps/' . $filename;
                 } else {
-                    // Store regular images in storage
-                    $path = $file->store('products', 'public');
-                    if ($path === false || empty($path)) {
+                    // Store regular images directly in public/storage/products
+                    $filename = time() . '_' . $file->getClientOriginalName();
+                    $destinationPath = public_path('storage/products');
+                    
+                    // Ensure directory exists
+                    if (!file_exists($destinationPath)) {
+                        mkdir($destinationPath, 0755, true);
+                    }
+                    
+                    $success = $file->move($destinationPath, $filename);
+                    if (!$success) {
                         \Log::error('Failed to store uploaded image', ['file' => $file->getClientOriginalName()]);
                         return back()->withInput()->withErrors(['image' => 'The image failed to upload.']);
                     }
-                    $data['image_url'] = '/storage/' . $path;
+                    $data['image_url'] = '/storage/products/' . $filename;
                 }
             } catch (\Exception $e) {
                 \Log::error('Exception while storing product image', ['message' => $e->getMessage()]);
@@ -188,13 +196,21 @@ class AdminProductController extends Controller
                     $file->move(public_path('images/caps'), $filename);
                     $data['image_url'] = '/images/caps/' . $filename;
                 } else {
-                    // Store regular images in storage
-                    $path = $file->store('products', 'public');
-                    if ($path === false || empty($path)) {
+                    // Store regular images directly in public/storage/products
+                    $filename = time() . '_' . $file->getClientOriginalName();
+                    $destinationPath = public_path('storage/products');
+                    
+                    // Ensure directory exists
+                    if (!file_exists($destinationPath)) {
+                        mkdir($destinationPath, 0755, true);
+                    }
+                    
+                    $success = $file->move($destinationPath, $filename);
+                    if (!$success) {
                         \Log::error('Failed to store uploaded image (update)', ['file' => $file->getClientOriginalName()]);
                         return back()->withInput()->withErrors(['image' => 'The image failed to upload.']);
                     }
-                    $data['image_url'] = '/storage/' . $path;
+                    $data['image_url'] = '/storage/products/' . $filename;
                 }
                 \Log::info('Image stored successfully in update', ['path' => $data['image_url']]);
             } catch (\Exception $e) {
