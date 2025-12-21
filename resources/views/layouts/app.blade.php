@@ -20,8 +20,19 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            /* padding-top: 76px;  */
-            /* Adjust for fixed navbar height */
+        }
+        
+        /* Navbar transparency */
+        .navbar.transparent {
+            background-color: transparent !important;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+        
+        .navbar.scrolled {
+            background-color: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         
         .aura-gradient {
@@ -151,7 +162,7 @@
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top transparent" id="mainNavbar">
         <div class="container">
             <a class="navbar-brand fw-bold fs-3" href="{{ route('home') }}" style="color: #7c3aed;">
                 Aksharam Fashion
@@ -173,19 +184,8 @@
                         <a class="nav-link" href="{{ route('products.index') }}">Shop All</a>
                     </li>
 
-                    <!-- Category Dropdown -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="categoryDropdown" role="button" data-bs-toggle="dropdown">
-                            Categories
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="categoryDropdown">
-                            <li><a class="dropdown-item" href="{{ route('shop.men') }}">👔 Men</a></li>
-                            <li><a class="dropdown-item" href="{{ route('shop.women') }}">👗 Women</a></li>
-                            <li><a class="dropdown-item" href="{{ route('shop.children') }}">👶 Children</a></li>
-                            <li><a class="dropdown-item" href="{{ route('shop.newborn') }}">🍼 Newborn</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ route('shop.caps') }}">🧢 Caps</a></li>
-                        </ul>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('shop.caps') }}">🧢 Caps</a>
                     </li>
 
                     <li class="nav-item">
@@ -303,10 +303,7 @@ $(document).ready(function(){
                         <li><a href="{{ route('home') }}" class="text-light text-decoration-none">Home</a></li>
                         <li><a href="{{ route('about') }}" class="text-light text-decoration-none">About Us</a></li>
                         <li><a href="{{ route('products.index') }}" class="text-light text-decoration-none">Shop All</a></li>
-                        <li><a href="{{ route('shop.men') }}" class="text-light text-decoration-none">Men's Collection</a></li>
-                        <li><a href="{{ route('shop.women') }}" class="text-light text-decoration-none">Women's Collection</a></li>
-                        <li><a href="{{ route('shop.children') }}" class="text-light text-decoration-none">Children's Collection</a></li>
-                        <li><a href="{{ route('shop.newborn') }}" class="text-light text-decoration-none">Newborn Collection</a></li>
+                        <li><a href="{{ route('shop.caps') }}" class="text-light text-decoration-none">Caps Collection</a></li>
                         <li><a href="{{ route('products.aiRecommended') }}" class="text-light text-decoration-none">AI Picks</a></li>
                     </ul>
                 </div>

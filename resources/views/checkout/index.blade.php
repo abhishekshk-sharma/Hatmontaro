@@ -129,7 +129,7 @@ document.getElementById('placeOrderBtn').addEventListener('click', function() {
         const rzp = new Razorpay(options);
         rzp.open();
         @else
-        alert('Payment initialization failed. Please refresh and try again.');
+        alert('Sorry! For you inconvenience, We Are Working On It.');
         resetButton(btn, originalText);
         @endif
     } else {

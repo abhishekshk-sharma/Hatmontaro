@@ -3,14 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use App\Models\Category;
 use App\Models\Banner;
+use App\Models\HeroBanner;
 use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
     public function index()
     {
+        // Get active hero banners
+        $heroBanners = HeroBanner::active()->ordered()->get();
+        
         // Get active banners ordered properly
         $banners = Banner::where('is_active', true)
             ->orderBy('order', 'asc')
@@ -22,26 +25,12 @@ class HomeController extends Controller
             ->limit(6)
             ->get();
             
-        // Get categories with product count
-        $categories = Category::withCount('products')
-            ->having('products_count', '>', 0)
-            ->limit(6)
-            ->get();
-            
-        // Get category-wise products (Amazon style)
-        $categoryProducts = [];
-        foreach($categories->take(4) as $category) {
-            $products = Product::where('category_id', $category->id)
-                ->limit(6)
-                ->get();
-            if($products->count() > 0) {
-                $categoryProducts[] = [
-                    'category' => $category,
-                    'products' => $products
-                ];
-            }
-        }
+        // Get caps products for category section
+        $categoryProducts = [[
+            'category' => (object)['name' => 'Caps Collection'],
+            'products' => Product::limit(6)->get()
+        ]];
 
-        return view('home', compact('banners', 'featuredProducts', 'categories', 'categoryProducts'));
+        return view('home', compact('heroBanners', 'banners', 'featuredProducts', 'categoryProducts'));
     }
 }

@@ -3,8 +3,60 @@
 @section('title', 'Aura - AI Fashion Platform')
 
 @section('content')
+<!-- Hero Section -->
+@if($heroBanners->count() > 0)
+<section class="hero-section position-relative" style="height: 100vh; overflow: hidden;">
+    <div id="heroCarousel" class="carousel slide h-100" data-bs-ride="carousel" data-bs-interval="5000">
+        <div class="carousel-inner h-100">
+            @foreach($heroBanners as $index => $banner)
+            <div class="carousel-item {{ $index === 0 ? 'active' : '' }} h-100">
+                @if($banner->media_type === 'video')
+                    <video class="w-100 h-100" style="object-fit: cover;" autoplay muted loop>
+                        <source src="{{ $banner->media_path }}" type="video/mp4">
+                    </video>
+                @else
+                    <img src="{{ $banner->media_path }}" class="w-100 h-100" style="object-fit: cover;" alt="{{ $banner->title }}">
+                @endif
+                
+                <div class="carousel-caption d-flex flex-column justify-content-center align-items-center h-100 text-center">
+                    <div class="hero-content">
+                        @if($banner->title)
+                            <h1 class="display-2 fw-bold text-white mb-4 hero-title">{{ $banner->title }}</h1>
+                        @endif
+                        @if($banner->description)
+                            <p class="lead text-white mb-4 hero-description">{{ $banner->description }}</p>
+                        @endif
+                        @if($banner->button_text && $banner->button_link)
+                            <a href="{{ $banner->button_link }}" class="btn btn-primary btn-lg px-5 py-3 hero-btn">
+                                {{ $banner->button_text }}
+                            </a>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+        
+        @if($heroBanners->count() > 1)
+        <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+        </button>
+        
+        <div class="carousel-indicators">
+            @foreach($heroBanners as $index => $banner)
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="{{ $index }}" 
+                    class="{{ $index === 0 ? 'active' : '' }}"></button>
+            @endforeach
+        </div>
+        @endif
+    </div>
+</section>
+@endif
 <!-- Offers & Discounts Cards -->
-<section class="py-4" style="margin-top: 56px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+<section class="py-4" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
     <div class="container">
         <!-- Desktop Layout -->
         <div class="row g-3 d-none d-md-flex">
@@ -176,7 +228,7 @@
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h3 class="fw-bold mb-0">{{ $categoryData['category']->name }}</h3>
-            <a href="{{ route('products.byCategory', $categoryData['category']) }}" class="btn btn-outline-primary btn-sm">
+            <a href="{{ route('shop.caps') }}" class="btn btn-outline-primary btn-sm">
                 See all <i class="bi bi-arrow-right ms-1"></i>
             </a>
         </div>
@@ -401,25 +453,19 @@
         <h4 class="fw-bold mb-4">Shop by Category</h4>
         
         <div class="row g-3">
-            @forelse($categories as $category)
-                <div class="col-6 col-md-3 col-lg-2">
-                    <a href="{{ route('products.byCategory', $category) }}" class="text-decoration-none">
-                        <div class="card border text-center hover-lift h-100">
-                            <div class="card-body p-3">
-                                <div class="mb-2">
-                                    <i class="bi bi-tag fs-2 text-primary"></i>
-                                </div>
-                                <h6 class="card-title mb-1">{{ $category->name }}</h6>
-                                <small class="text-muted">{{ $category->products_count ?? 0 }} items</small>
+            <div class="col-6 col-md-3 col-lg-2">
+                <a href="{{ route('shop.caps') }}" class="text-decoration-none">
+                    <div class="card border text-center hover-lift h-100">
+                        <div class="card-body p-3">
+                            <div class="mb-2">
+                                <i class="bi bi-tag fs-2 text-primary"></i>
                             </div>
+                            <h6 class="card-title mb-1">Caps</h6>
+                            <small class="text-muted">All Caps</small>
                         </div>
-                    </a>
-                </div>
-            @empty
-                <div class="col-12 text-center py-3">
-                    <p class="text-muted">No categories available yet.</p>
-                </div>
-            @endforelse
+                    </div>
+                </a>
+            </div>
         </div>
     </div>
 </section>
@@ -427,6 +473,54 @@
 
 @push('styles')
 <style>
+    /* Hero Section Styles */
+    .hero-section {
+        position: relative;
+    }
+    
+    .hero-content {
+        z-index: 2;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+    
+    .hero-title {
+        animation: fadeInUp 1s ease-out;
+    }
+    
+    .hero-description {
+        animation: fadeInUp 1s ease-out 0.3s both;
+    }
+    
+    .hero-btn {
+        animation: fadeInUp 1s ease-out 0.6s both;
+        border-radius: 50px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .carousel-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.3);
+        z-index: 1;
+    }
+    
     .product-card {
         transition: transform 0.3s ease, box-shadow 0.3s ease;
         border: none;
@@ -479,4 +573,36 @@
         height: 100%;
     }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+// Navbar transparency on scroll
+window.addEventListener('scroll', function() {
+    const navbar = document.getElementById('mainNavbar');
+    const heroSection = document.querySelector('.hero-section');
+    
+    if (heroSection) {
+        const heroHeight = heroSection.offsetHeight;
+        
+        if (window.scrollY > heroHeight - 100) {
+            navbar.classList.remove('transparent');
+            navbar.classList.add('scrolled');
+        } else {
+            navbar.classList.add('transparent');
+            navbar.classList.remove('scrolled');
+        }
+    }
+});
+
+// Initialize navbar state
+document.addEventListener('DOMContentLoaded', function() {
+    const navbar = document.getElementById('mainNavbar');
+    const heroSection = document.querySelector('.hero-section');
+    
+    if (heroSection && window.scrollY === 0) {
+        navbar.classList.add('transparent');
+    }
+});
+</script>
 @endpush

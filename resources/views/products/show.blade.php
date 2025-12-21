@@ -34,8 +34,8 @@
                          id="productImage"
                          class="card-img-top rounded" 
                          alt="{{ $product->name }}"
-                         style="max-height: 500px; object-fit: cover; cursor: zoom-in;">
-                    <div id="magnifier" style="display:none; position:absolute; width:150px; height:150px; border:3px solid #7c3aed; border-radius:50%; pointer-events:none; background-repeat:no-repeat; box-shadow:0 4px 8px rgba(0,0,0,0.3);"></div>
+                         style="max-height: 500px; object-fit: cover; cursor: zoom-in;"
+                         onclick="openImageModal()">
                 @endif
                 
                 @if($product->is_ai_recommended)
@@ -58,13 +58,15 @@
             @if($allMedia->count() > 1)
             <div class="mt-3">
                 <div class="row g-2">
-                    @foreach($allMedia as $media)
-                    <div class="col-3">
-                        <div class="card media-thumb" style="cursor:pointer;" onclick="changeMedia('{{ $media->url }}', '{{ $media->type }}')">
+                    @foreach($allMedia as $index => $media)
+                    <div class="col-2">
+                        <div class="card media-thumb {{ $index === 0 ? 'border-primary' : '' }}" 
+                             style="cursor:pointer;" 
+                             onclick="changeMedia('{{ $media->url }}', '{{ $media->type }}', this)">
                             @if($media->type === 'video')
-                                <video src="{{ $media->url }}" class="card-img-top" style="height:80px;object-fit:cover;"></video>
+                                <video src="{{ $media->url }}" class="card-img-top" style="height:60px;object-fit:cover;"></video>
                             @else
-                                <img src="{{ $media->url }}" class="card-img-top" style="height:80px;object-fit:cover;" />
+                                <img src="{{ $media->url }}" class="card-img-top" style="height:60px;object-fit:cover;" />
                             @endif
                         </div>
                     </div>
@@ -75,7 +77,13 @@
         </div>
         
         <!-- Product Info -->
-        <div class="col-lg-6">
+        <div class="col-lg-6 position-relative">
+            <!-- Magnified Overlay -->
+            <div id="magnifiedOverlay" class="position-absolute top-0 start-0 w-100 h-100 bg-white border shadow-lg rounded" 
+                 style="display: none; z-index: 1000; overflow: hidden;">
+                <div id="magnifiedView" class="w-100 h-100" style="background-repeat: no-repeat;"></div>
+            </div>
+            
             <div class="ps-lg-4">
                 <!-- Badges -->
                 <div class="mb-3">
@@ -254,43 +262,127 @@
     @endif
 </div>
 
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">{{ $product->name }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="row g-0">
+                    <!-- Main Image in Modal -->
+                    <div class="col-md-9">
+                        <div class="position-relative">
+                            <img id="modalMainImage" src="{{ $img }}" class="w-100" style="max-height: 70vh; object-fit: contain;">
+                        </div>
+                    </div>
+                    <!-- Thumbnails in Modal -->
+                    <div class="col-md-3 bg-light">
+                        <div class="p-3">
+                            <h6 class="mb-3">All Images</h6>
+                            <div class="d-grid gap-2">
+                                @foreach($allMedia as $index => $media)
+                                @if($media->type === 'image')
+                                <div class="modal-thumb {{ $index === 0 ? 'border-primary' : '' }}" 
+                                     style="cursor:pointer; border: 2px solid transparent;" 
+                                     onclick="changeModalImage('{{ $media->url }}', this)">
+                                    <img src="{{ $media->url }}" class="w-100 rounded" style="height:80px;object-fit:cover;" />
+                                </div>
+                                @endif
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
-function changeMedia(url, type) {
+let allMedia = @json($allMedia);
+
+function changeMedia(url, type, element) {
+    // Remove active class from all thumbnails
+    document.querySelectorAll('.media-thumb').forEach(thumb => {
+        thumb.classList.remove('border-primary');
+    });
+    // Add active class to clicked thumbnail
+    element.classList.add('border-primary');
+    
     const card = document.getElementById('productImageCard');
     if (type === 'video') {
         card.innerHTML = `<video id="productVideo" class="card-img-top rounded" controls style="max-height: 500px; width:100%;"><source src="${url}" type="video/mp4"></video>`;
     } else {
-        card.innerHTML = `<img src="${url}" id="productImage" class="card-img-top rounded" style="max-height: 500px; object-fit: cover; cursor: zoom-in;"><div id="magnifier" style="display:none; position:absolute; width:150px; height:150px; border:3px solid #7c3aed; border-radius:50%; pointer-events:none; background-repeat:no-repeat; box-shadow:0 4px 8px rgba(0,0,0,0.3);"></div>`;
+        card.innerHTML = `
+            <img src="${url}" 
+                 id="productImage" 
+                 class="card-img-top rounded" 
+                 style="max-height: 500px; object-fit: cover; cursor: zoom-in;"
+                 onclick="openImageModal()"
+                 alt="{{ $product->name }}">
+        `;
         initMagnifier();
     }
 }
 
 function initMagnifier() {
     const img = document.getElementById('productImage');
-    const magnifier = document.getElementById('magnifier');
-    if (!img || !magnifier) return;
+    const overlay = document.getElementById('magnifiedOverlay');
+    const magnifiedView = document.getElementById('magnifiedView');
+    if (!img || !overlay || !magnifiedView) return;
     
     const zoom = 2.5;
+    
+    img.addEventListener('mouseenter', () => {
+        overlay.style.display = 'block';
+        magnifiedView.style.backgroundImage = `url('${img.src}')`;
+    });
+    
     img.addEventListener('mousemove', (e) => {
         const rect = img.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
-        magnifier.style.display = 'block';
-        magnifier.style.left = (x - 75) + 'px';
-        magnifier.style.top = (y - 75) + 'px';
-        const bgX = -x * zoom + 75;
-        const bgY = -y * zoom + 75;
-        magnifier.style.backgroundImage = `url('${img.src}')`;
-        magnifier.style.backgroundSize = `${img.width * zoom}px ${img.height * zoom}px`;
-        magnifier.style.backgroundPosition = `${bgX}px ${bgY}px`;
+        
+        // Calculate background position for magnified view
+        const bgX = -x * zoom + overlay.offsetWidth / 2;
+        const bgY = -y * zoom + overlay.offsetHeight / 2;
+        
+        magnifiedView.style.backgroundSize = `${rect.width * zoom}px ${rect.height * zoom}px`;
+        magnifiedView.style.backgroundPosition = `${bgX}px ${bgY}px`;
     });
+    
     img.addEventListener('mouseleave', () => {
-        magnifier.style.display = 'none';
+        overlay.style.display = 'none';
     });
 }
 
-initMagnifier();
+function openImageModal() {
+    const modal = new bootstrap.Modal(document.getElementById('imageModal'));
+    modal.show();
+}
+
+function changeModalImage(url, element) {
+    // Remove active class from all modal thumbnails
+    document.querySelectorAll('.modal-thumb').forEach(thumb => {
+        thumb.classList.remove('border-primary');
+        thumb.style.borderColor = 'transparent';
+    });
+    // Add active class to clicked thumbnail
+    element.classList.add('border-primary');
+    element.style.borderColor = '#0d6efd';
+    
+    // Change main modal image
+    document.getElementById('modalMainImage').src = url;
+}
+
+// Initialize magnifier on page load
+document.addEventListener('DOMContentLoaded', function() {
+    initMagnifier();
+});
 </script>
 @endpush
 

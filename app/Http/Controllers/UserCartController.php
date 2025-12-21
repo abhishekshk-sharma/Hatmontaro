@@ -20,10 +20,21 @@ class UserCartController extends Controller
             return redirect()->route('login')->with('error', 'Please login to add items to cart');
         }
 
-        UserCart::updateOrCreate(
-            ['user_id' => auth()->id(), 'product_id' => $productId],
-            ['quantity' => \DB::raw('quantity + 1')]
-        );
+        $existingCart = UserCart::where('user_id', auth()->id())
+                                ->where('product_id', $productId)
+                                ->first();
+
+        if ($existingCart) {
+            // If product already exists in cart, increment quantity by 1
+            $existingCart->increment('quantity');
+        } else {
+            // If product doesn't exist in cart, create new entry with quantity 1
+            UserCart::create([
+                'user_id' => auth()->id(),
+                'product_id' => $productId,
+                'quantity' => 1
+            ]);
+        }
 
         return back()->with('success', 'Added to cart!');
     }

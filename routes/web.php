@@ -35,14 +35,9 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 // Products
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 Route::get('/products/ai-recommended', [ProductController::class, 'aiRecommended'])->name('products.aiRecommended');
-Route::get('/products/category/{category}', [ProductController::class, 'byCategory'])->name('products.byCategory');
 
-// Category shortcuts
-Route::get('/men', [ProductController::class, 'byCategory'])->defaults('category', 'men')->name('shop.men');
-Route::get('/women', [ProductController::class, 'byCategory'])->defaults('category', 'women')->name('shop.women');
-Route::get('/children', [ProductController::class, 'byCategory'])->defaults('category', 'children')->name('shop.children');
-Route::get('/newborn', [ProductController::class, 'byCategory'])->defaults('category', 'newborn')->name('shop.newborn');
-Route::get('/caps', [ProductController::class, 'byCategory'])->defaults('category', 'caps')->name('shop.caps');
+// Caps only
+Route::get('/caps', [ProductController::class, 'caps'])->name('shop.caps');
 
 // Caps try-on UI
 Route::get('/caps/tryon', [CapTryOnController::class, 'index'])->name('caps.tryon');
@@ -214,6 +209,16 @@ Route::prefix('admin')->group(function () {
         Route::put('banners/{banner}', [AdminBannerController::class, 'update'])->name('admin.banners.update');
         Route::delete('banners/{banner}', [AdminBannerController::class, 'destroy'])->name('admin.banners.destroy');
         Route::put('banners/{banner}/toggle', [AdminBannerController::class, 'toggleStatus'])->name('admin.banners.toggleStatus');
+        
+        // Hero Banners Management
+        Route::resource('hero-banners', \App\Http\Controllers\AdminHeroBannerController::class)->names([
+            'index' => 'admin.hero-banners.index',
+            'create' => 'admin.hero-banners.create',
+            'store' => 'admin.hero-banners.store',
+            'edit' => 'admin.hero-banners.edit',
+            'update' => 'admin.hero-banners.update',
+            'destroy' => 'admin.hero-banners.destroy'
+        ]);
         
         // Contact Messages Management
         Route::get('contacts', [\App\Http\Controllers\AdminContactController::class, 'index'])->name('admin.contacts.index');
