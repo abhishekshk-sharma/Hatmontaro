@@ -4,6 +4,31 @@
 import './bootstrap';
 import * as bootstrap from 'bootstrap';
 
+
+
+// Disable right-click
+document.addEventListener("contextmenu", function(e) {
+  e.preventDefault();
+});
+
+// Disable specific key combinations
+document.addEventListener("keydown", function(e) {
+  // F12
+  if (e.key === "F12") {
+    e.preventDefault();
+  }
+  // Ctrl+Shift+I, Ctrl+Shift+C, Ctrl+Shift+J
+  if (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "C" || e.key === "J")) {
+    e.preventDefault();
+  }
+  // Ctrl+U (view source)
+  if (e.ctrlKey && e.key === "u") {
+    e.preventDefault();
+  }
+});
+
+
+
 // Initialize all tooltips
 var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
 var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
