@@ -216,43 +216,36 @@ Route::middleware(['web'])->prefix('admin')->name('admin.')->group(function () {
         Route::put('banners/{banner}/toggle', [AdminBannerController::class, 'toggleStatus'])->name('banners.toggleStatus');
         
         // Hero Banners Management
-        Route::resource('hero-banners', \App\Http\Controllers\AdminHeroBannerController::class)->names([
-            'index' => 'admin.hero-banners.index',
-            'create' => 'admin.hero-banners.create',
-            'store' => 'admin.hero-banners.store',
-            'edit' => 'admin.hero-banners.edit',
-            'update' => 'admin.hero-banners.update',
-            'destroy' => 'admin.hero-banners.destroy'
-        ]);
+        Route::resource('hero-banners', \App\Http\Controllers\AdminHeroBannerController::class);
         
         // Contact Messages Management
-        Route::get('contacts', [\App\Http\Controllers\AdminContactController::class, 'index'])->name('admin.contacts.index');
-        Route::get('contacts/{contact}', [\App\Http\Controllers\AdminContactController::class, 'show'])->name('admin.contacts.show');
-        Route::post('contacts/{contact}/respond', [\App\Http\Controllers\AdminContactController::class, 'respond'])->name('admin.contacts.respond');
+        Route::get('contacts', [\App\Http\Controllers\AdminContactController::class, 'index'])->name('contacts.index');
+        Route::get('contacts/{contact}', [\App\Http\Controllers\AdminContactController::class, 'show'])->name('contacts.show');
+        Route::post('contacts/{contact}/respond', [\App\Http\Controllers\AdminContactController::class, 'respond'])->name('contacts.respond');
         
         // Complaints Management
-        Route::get('complaints', [\App\Http\Controllers\AdminComplaintController::class, 'index'])->name('admin.complaints.index');
-        Route::get('complaints/{complaint}', [\App\Http\Controllers\AdminComplaintController::class, 'show'])->name('admin.complaints.show');
-        Route::put('complaints/{complaint}', [\App\Http\Controllers\AdminComplaintController::class, 'updateStatus'])->name('admin.complaints.update');
+        Route::get('complaints', [\App\Http\Controllers\AdminComplaintController::class, 'index'])->name('complaints.index');
+        Route::get('complaints/{complaint}', [\App\Http\Controllers\AdminComplaintController::class, 'show'])->name('complaints.show');
+        Route::put('complaints/{complaint}', [\App\Http\Controllers\AdminComplaintController::class, 'updateStatus'])->name('complaints.update');
         
         // About Us Management
-        Route::get('about', [\App\Http\Controllers\Admin\AboutUsController::class, 'index'])->name('admin.about.index');
-        Route::get('about/section/{id}/edit', [\App\Http\Controllers\Admin\AboutUsController::class, 'editSection'])->name('admin.about.section.edit');
-        Route::put('about/section/{id}', [\App\Http\Controllers\Admin\AboutUsController::class, 'updateSection'])->name('admin.about.section.update');
-        Route::get('about/team', [\App\Http\Controllers\Admin\AboutUsController::class, 'teamIndex'])->name('admin.about.team.index');
-        Route::get('about/team/create', [\App\Http\Controllers\Admin\AboutUsController::class, 'teamCreate'])->name('admin.about.team.create');
-        Route::post('about/team', [\App\Http\Controllers\Admin\AboutUsController::class, 'teamStore'])->name('admin.about.team.store');
-        Route::get('about/team/{id}/edit', [\App\Http\Controllers\Admin\AboutUsController::class, 'teamEdit'])->name('admin.about.team.edit');
-        Route::put('about/team/{id}', [\App\Http\Controllers\Admin\AboutUsController::class, 'teamUpdate'])->name('admin.about.team.update');
-        Route::delete('about/team/{id}', [\App\Http\Controllers\Admin\AboutUsController::class, 'teamDestroy'])->name('admin.about.team.destroy');
+        Route::get('about', [\App\Http\Controllers\Admin\AboutUsController::class, 'index'])->name('about.index');
+        Route::get('about/section/{id}/edit', [\App\Http\Controllers\Admin\AboutUsController::class, 'editSection'])->name('about.section.edit');
+        Route::put('about/section/{id}', [\App\Http\Controllers\Admin\AboutUsController::class, 'updateSection'])->name('about.section.update');
+        Route::get('about/team', [\App\Http\Controllers\Admin\AboutUsController::class, 'teamIndex'])->name('about.team.index');
+        Route::get('about/team/create', [\App\Http\Controllers\Admin\AboutUsController::class, 'teamCreate'])->name('about.team.create');
+        Route::post('about/team', [\App\Http\Controllers\Admin\AboutUsController::class, 'teamStore'])->name('about.team.store');
+        Route::get('about/team/{id}/edit', [\App\Http\Controllers\Admin\AboutUsController::class, 'teamEdit'])->name('about.team.edit');
+        Route::put('about/team/{id}', [\App\Http\Controllers\Admin\AboutUsController::class, 'teamUpdate'])->name('about.team.update');
+        Route::delete('about/team/{id}', [\App\Http\Controllers\Admin\AboutUsController::class, 'teamDestroy'])->name('about.team.destroy');
         
         // Page Banners Management
-        Route::get('page-banners', [\App\Http\Controllers\Admin\PageBannerController::class, 'index'])->name('admin.page-banners.index');
-        Route::get('page-banners/{pageBanner}/edit', [\App\Http\Controllers\Admin\PageBannerController::class, 'edit'])->name('admin.page-banners.edit');
-        Route::put('page-banners/{pageBanner}', [\App\Http\Controllers\Admin\PageBannerController::class, 'update'])->name('admin.page-banners.update');
+        Route::get('page-banners', [\App\Http\Controllers\Admin\PageBannerController::class, 'index'])->name('page-banners.index');
+        Route::get('page-banners/{pageBanner}/edit', [\App\Http\Controllers\Admin\PageBannerController::class, 'edit'])->name('page-banners.edit');
+        Route::put('page-banners/{pageBanner}', [\App\Http\Controllers\Admin\PageBannerController::class, 'update'])->name('page-banners.update');
         
         // Reports & Analytics
-        Route::get('reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('admin.reports.index');
-        Route::get('reports/export', [\App\Http\Controllers\Admin\ReportController::class, 'export'])->name('admin.reports.export');
+        Route::get('reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports.index');
+        Route::get('reports/export', [\App\Http\Controllers\Admin\ReportController::class, 'export'])->name('reports.export');
     });
 });
