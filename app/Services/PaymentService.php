@@ -59,14 +59,25 @@ class PaymentService
             return false;
         }
         
-        // Check for duplicate verification attempts with stricter caching
+        // Check for duplicate verification attempts with shorter cache time
         $cacheKey = "payment_verify:{$paymentId}:{$orderId}";
         if (Cache::has($cacheKey)) {
-            Log::warning('Duplicate payment verification attempt blocked', [
-                'payment_id' => $paymentId,
-                'ip' => request()->ip()
-            ]);
-            return false;
+            $cacheData = Cache::get($cacheKey);
+            // Allow re-verification if cache is older than 10 minutes
+            if (is_array($cacheData) && isset($cacheData['verified_at'])) {
+                if (now()->diffInMinutes($cacheData['verified_at']) > 10) {
+                    Cache::forget($cacheKey);
+                } else {
+                    Log::warning('Duplicate payment verification attempt blocked', [
+                        'payment_id' => $paymentId,
+                        'ip' => request()->ip()
+                    ]);
+                    return false;
+                }
+            } else {
+                // Old cache format, clear it
+                Cache::forget($cacheKey);
+            }
         }
         
         // Rate limiting per IP
@@ -187,7 +198,7 @@ class PaymentService
             return null;
         }
         
-        // Check for duplicate order creation
+        // Check for duplicate order creation with shorter cache time
         $userId = auth()->id();
         $duplicateKey = "order_create:{$userId}:{$amount}";
         if (Cache::has($duplicateKey)) {
@@ -195,7 +206,18 @@ class PaymentService
                 'user_id' => $userId,
                 'amount' => $amount
             ]);
-            return null;
+            // Clear the cache if it's older than 2 minutes to prevent permanent blocking
+            $cacheData = Cache::get($duplicateKey);
+            if (is_array($cacheData) && isset($cacheData['created_at'])) {
+                if (now()->diffInMinutes($cacheData['created_at']) > 2) {
+                    Cache::forget($duplicateKey);
+                } else {
+                    return null;
+                }
+            } else {
+                // Old cache format, clear it
+                Cache::forget($duplicateKey);
+            }
         }
         
         try {
@@ -213,8 +235,11 @@ class PaymentService
                 ]
             ]);
             
-            // Cache to prevent duplicates for 5 minutes
-            Cache::put($duplicateKey, true, 300);
+            // Cache to prevent duplicates for 2 minutes instead of 5
+            Cache::put($duplicateKey, [
+                'created_at' => now(),
+                'order_id' => $order->id
+            ], 120);
             
             // Store order details securely
             DB::table('payment_orders')->insert([
@@ -308,6 +333,31 @@ class PaymentService
             return false;
         }
     }
+    
+    public function clearPaymentCaches($userId = null, $amount = null)
+    {
+        $patterns = [
+            'order_create:*',
+            'payment_verify:*',
+            'payment_details:*',
+            'payment_verify_ip:*'
+        ];
+        
+        if ($userId && $amount) {
+            $specificKey = "order_create:{$userId}:{$amount}";
+            Cache::forget($specificKey);
+            Log::info('Cleared specific payment cache', ['key' => $specificKey]);
+        }
+        
+        // Clear all payment-related caches
+        foreach ($patterns as $pattern) {
+            $keys = Cache::getRedis()->keys($pattern);
+            if ($keys) {
+                Cache::getRedis()->del($keys);
+            }
+        }
+        
+        Log::info('Payment caches cleared', ['patterns' => $patterns]);
     
     public function refundPayment($paymentId, $amount = null, $reason = 'requested_by_customer')
     {

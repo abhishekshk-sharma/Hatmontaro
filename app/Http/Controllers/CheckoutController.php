@@ -417,9 +417,19 @@ class CheckoutController extends Controller
         } catch (Exception $e) {
             DB::rollBack();
             
+            // Clear payment caches on error to prevent permanent blocking
+            try {
+                $paymentService = app(PaymentService::class);
+                $paymentService->clearPaymentCaches(auth()->id(), $total);
+            } catch (Exception $cacheError) {
+                Log::warning('Failed to clear payment caches after error', [
+                    'cache_error' => $cacheError->getMessage()
+                ]);
+            }
+            
             Log::error('Order creation failed', [
                 'user_id' => auth()->id(),
-                'error' => 'Payment processing failed',
+                'error' => $e->getMessage(),
                 'ip' => request()->ip(),
                 'payment_data' => [
                     'payment_id' => $request->razorpay_payment_id ? substr($request->razorpay_payment_id, 0, 8) . '***' : null,
@@ -429,7 +439,7 @@ class CheckoutController extends Controller
             
             return response()->json([
                 'success' => false,
-                'message' => 'Payment processing temporarily unavailable. Please contact support.'
+                'message' => 'We are working on processing your payment. Please contact support if the amount was debited.'
             ], 400);
         }
     }
@@ -538,18 +548,42 @@ class CheckoutController extends Controller
             throw new Exception('Invalid payment ID format in webhook');
         }
         
-        $updated = Order::where('payment_id', $paymentId)
-             ->where('payment_status', '!=', 'success')
-             ->update([
-                 'payment_status' => 'success',
-                 'status' => 'processing',
-                 'payment_captured_at' => now()
-             ]);
-             
-        if ($updated > 0) {
+        // First, try to find order by payment_id
+        $order = Order::where('payment_id', $paymentId)
+                     ->where('payment_status', '!=', 'success')
+                     ->first();
+        
+        if (!$order) {
+            // If not found, try to find by razorpay_order_id from payload
+            if (isset($payload['payment']['entity']['order_id'])) {
+                $razorpayOrderId = $payload['payment']['entity']['order_id'];
+                $order = Order::where('razorpay_order_id', $razorpayOrderId)
+                             ->where('payment_status', '!=', 'success')
+                             ->first();
+                             
+                if ($order && empty($order->payment_id)) {
+                    // Update the order with payment_id
+                    $order->update(['payment_id' => $paymentId]);
+                }
+            }
+        }
+        
+        if ($order) {
+            $updated = $order->update([
+                'payment_status' => 'success',
+                'status' => 'processing',
+                'payment_captured_at' => now()
+            ]);
+            
             Log::info('Order payment status updated via webhook', [
+                'order_id' => $order->id,
                 'payment_id' => $paymentId,
-                'updated_orders' => $updated
+                'user_id' => $order->user_id
+            ]);
+        } else {
+            Log::warning('No matching order found for payment webhook', [
+                'payment_id' => $paymentId,
+                'razorpay_order_id' => $payload['payment']['entity']['order_id'] ?? null
             ]);
         }
     }
