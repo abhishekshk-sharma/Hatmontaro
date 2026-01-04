@@ -40,7 +40,7 @@ class ProductController extends Controller
         
         // Color filter
         if ($request->filled('color')) {
-            $query->where('color', 'like', '%' . $request->color . '%');
+            $query->where('color', $request->color);
         }
         
         // Price range filter

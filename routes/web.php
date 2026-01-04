@@ -15,163 +15,168 @@ use App\Http\Controllers\AdminCategoryController;
 use App\Http\Controllers\AdminOrderController;
 use App\Http\Controllers\AdminUserController;
 use App\Http\Controllers\AdminBannerController;
-// routes/web.php
 use App\Http\Controllers\SitemapController;
 
-Route::get('/admin/generate-sitemap', [SitemapController::class, 'generate'])
-    ->middleware('auth'); // protect it if you have auth
+// All web routes with CSRF protection
+Route::middleware(['web'])->group(function () {
 
+    Route::get('/admin/generate-sitemap', [SitemapController::class, 'generate'])
+        ->middleware('auth');
 
-// User Auth
-Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
-Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    // User Auth
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Homepage
-Route::get('/', [HomeController::class, 'index'])->name('home');
+    // Password Reset Routes
+    Route::get('/forgot-password', [\App\Http\Controllers\ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+    Route::post('/forgot-password', [\App\Http\Controllers\ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+    Route::get('/reset-password/{token}', [\App\Http\Controllers\ForgotPasswordController::class, 'showResetForm'])->name('password.reset');
+    Route::post('/reset-password', [\App\Http\Controllers\ForgotPasswordController::class, 'reset'])->name('password.update');
 
-// Products
-Route::get('/products', [ProductController::class, 'index'])->name('products.index');
-Route::get('/products/ai-recommended', [ProductController::class, 'aiRecommended'])->name('products.aiRecommended');
+    // Homepage
+    Route::get('/', [HomeController::class, 'index'])->name('home');
 
-// Caps only
-Route::get('/caps', [ProductController::class, 'caps'])->name('shop.caps');
+    // Products
+    Route::get('/products', [ProductController::class, 'index'])->name('products.index');
+    Route::get('/products/ai-recommended', [ProductController::class, 'aiRecommended'])->name('products.aiRecommended');
 
-// Caps try-on UI
-Route::get('/caps/tryon', [CapTryOnController::class, 'index'])->name('caps.tryon');
-Route::get('/api/caps/recommendations', [CapTryOnController::class, 'recommendations']);
-Route::get('/api/caps/brands', [CapTryOnController::class, 'brands']);
-Route::get('/api/caps/colors', [CapTryOnController::class, 'colors']);
+    // Caps only
+    Route::get('/caps', [ProductController::class, 'caps'])->name('shop.caps');
 
-Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show')->where('product', '[0-9]+|[a-z0-9-]+');
+    // Caps try-on UI
+    Route::get('/caps/tryon', [CapTryOnController::class, 'index'])->name('caps.tryon');
+    Route::get('/api/caps/recommendations', [CapTryOnController::class, 'recommendations']);
+    Route::get('/api/caps/brands', [CapTryOnController::class, 'brands']);
+    Route::get('/api/caps/colors', [CapTryOnController::class, 'colors']);
 
-// AI Recommendations
-Route::post('/ai/recommend', [AIRecommendationController::class, 'getRecommendations'])->name('ai.recommend');
+    Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show')->where('product', '[0-9]+|[a-z0-9-]+');
 
-// Cart (simple implementation for now)
-Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-Route::post('/cart/add/{product}', [CartController::class, 'add'])->name('cart.add');
-Route::put('/cart/{item}', [CartController::class, 'update'])->name('cart.update');
-Route::delete('/cart/{item}', [CartController::class, 'remove'])->name('cart.remove');
-Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
+    // AI Recommendations
+    Route::post('/ai/recommend', [AIRecommendationController::class, 'getRecommendations'])->name('ai.recommend');
 
-// User Cart & Profile
-Route::middleware('auth')->group(function() {
-    Route::get('/my-cart', [UserCartController::class, 'index'])->name('user.cart');
-    Route::post('/my-cart/add/{product}', [UserCartController::class, 'add'])->name('user.cart.add');
-    Route::put('/my-cart/{id}', [UserCartController::class, 'update'])->name('user.cart.update');
-    Route::delete('/my-cart/{id}', [UserCartController::class, 'remove'])->name('user.cart.remove');
-    Route::post('/my-cart/{id}/save-later', [UserCartController::class, 'saveForLater'])->name('user.cart.saveForLater');
-    
-    Route::get('/profile', [\App\Http\Controllers\UserProfileController::class, 'show'])->name('user.profile');
-    Route::put('/profile', [\App\Http\Controllers\UserProfileController::class, 'update'])->name('user.profile.update');
-    Route::put('/profile/password', [\App\Http\Controllers\UserProfileController::class, 'updatePassword'])->name('user.profile.password');
-    Route::get('/orders', [\App\Http\Controllers\UserProfileController::class, 'allOrders'])->name('user.orders.all');
-    Route::get('/orders/{order}', [\App\Http\Controllers\UserProfileController::class, 'viewOrder'])->name('user.orders.view');
-    
-    // Complaints
-    Route::get('/complaints', [\App\Http\Controllers\ComplaintController::class, 'index'])->name('user.complaints.index');
-    Route::get('/complaints/create', [\App\Http\Controllers\ComplaintController::class, 'create'])->name('user.complaints.create');
-    Route::post('/complaints', [\App\Http\Controllers\ComplaintController::class, 'store'])->name('user.complaints.store');
-    Route::get('/complaints/{complaint}', [\App\Http\Controllers\ComplaintController::class, 'show'])->name('user.complaints.show');
-    
-    // Wishlist
-    Route::get('/wishlist', [\App\Http\Controllers\WishlistController::class, 'index'])->name('wishlist.index');
-    Route::post('/wishlist/add/{product}', [\App\Http\Controllers\WishlistController::class, 'add'])->name('wishlist.add');
-    Route::delete('/wishlist/remove/{id}', [\App\Http\Controllers\WishlistController::class, 'remove'])->name('wishlist.remove');
-    Route::post('/wishlist/move-to-cart/{id}', [\App\Http\Controllers\WishlistController::class, 'moveToCart'])->name('wishlist.moveToCart');
-});
+    // Cart (simple implementation for now)
+    Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
+    Route::post('/cart/add/{product}', [CartController::class, 'add'])->name('cart.add');
+    Route::put('/cart/{item}', [CartController::class, 'update'])->name('cart.update');
+    Route::delete('/cart/{item}', [CartController::class, 'remove'])->name('cart.remove');
+    Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
 
-// Checkout
-Route::middleware('auth')->group(function() {
-    Route::get('/checkout', [\App\Http\Controllers\CheckoutController::class, 'index'])->name('checkout');
-    Route::post('/checkout/process', [\App\Http\Controllers\CheckoutController::class, 'process'])->name('checkout.process');
-    Route::get('/checkout/success/{order}', [\App\Http\Controllers\CheckoutController::class, 'success'])->name('checkout.success');
-});
-
-// Payment Webhook (no auth required)
-Route::post('/payment/webhook', [\App\Http\Controllers\CheckoutController::class, 'webhook'])->name('payment.webhook');
-
-// AI Chat
-Route::post('/ai/chat', [\App\Http\Controllers\AIChatController::class, 'chat'])->name('ai.chat');
-Route::post('/ai/select-category', [\App\Http\Controllers\AIChatController::class, 'selectCategory'])->name('ai.selectCategory');
-
-// Static Pages
-Route::get('/about', [\App\Http\Controllers\PageController::class, 'about'])->name('about');
-Route::get('/terms', [\App\Http\Controllers\PageController::class, 'terms'])->name('terms');
-Route::get('/privacy', [\App\Http\Controllers\PageController::class, 'privacy'])->name('privacy');
-Route::get('/contact', [\App\Http\Controllers\PageController::class, 'contact'])->name('contact');
-Route::post('/contact', [\App\Http\Controllers\PageController::class, 'contactSubmit'])->name('contact.submit');
-
-// Debug routes
-Route::get('/debug', function() {
-    return response()->json([
-        'status' => 'ok',
-        'routes' => [
-            'home' => route('home'),
-            'products.index' => route('products.index'),
-            'products.aiRecommended' => route('products.aiRecommended'),
-            'cart.index' => route('cart.index'),
-        ]
-    ]);
-});
-
-// Add this to routes/web.php
-Route::get('/test-ai-page', function() {
-    // Test if we can access the route
-    try {
-        $url = route('products.aiRecommended');
-        echo "✅ Route exists: {$url}<br>";
+    // User Cart & Profile
+    Route::middleware('auth')->group(function() {
+        Route::get('/my-cart', [UserCartController::class, 'index'])->name('user.cart');
+        Route::post('/my-cart/add/{product}', [UserCartController::class, 'add'])->name('user.cart.add');
+        Route::put('/my-cart/{id}', [UserCartController::class, 'update'])->name('user.cart.update');
+        Route::delete('/my-cart/{id}', [UserCartController::class, 'remove'])->name('user.cart.remove');
+        Route::post('/my-cart/{id}/save-later', [UserCartController::class, 'saveForLater'])->name('user.cart.saveForLater');
         
-        // Test if controller method works
-        $controller = new \App\Http\Controllers\ProductController();
-        if (method_exists($controller, 'aiRecommended')) {
-            echo "✅ Controller method exists<br>";
-            
-            // Get products
-            $products = \App\Models\Product::where('is_ai_recommended', true)->get();
-            echo "✅ Found {$products->count()} AI recommended products<br>";
-            
-            echo "<a href='{$url}'>Click here to go to AI Recommended page</a>";
-        } else {
-            echo "❌ Controller method missing<br>";
-        }
-    } catch (\Exception $e) {
-        echo "❌ Error: " . $e->getMessage() . "<br>";
-    }
-});
-
-// Storage symlink route for hosting
-Route::get('/create-storage-link', function() {
-    if (!file_exists(public_path('storage'))) {
-        $target = storage_path('app/public');
-        $link = public_path('storage');
+        Route::get('/profile', [\App\Http\Controllers\UserProfileController::class, 'show'])->name('user.profile');
+        Route::put('/profile', [\App\Http\Controllers\UserProfileController::class, 'update'])->name('user.profile.update');
+        Route::put('/profile/password', [\App\Http\Controllers\UserProfileController::class, 'updatePassword'])->name('user.profile.password');
+        Route::get('/orders', [\App\Http\Controllers\UserProfileController::class, 'allOrders'])->name('user.orders.all');
+        Route::get('/orders/{order}', [\App\Http\Controllers\UserProfileController::class, 'viewOrder'])->name('user.orders.view');
         
-        if (function_exists('symlink')) {
-            symlink($target, $link);
-            return 'Storage symlink created successfully!';
-        } else {
-            return 'Symlink function not available. Contact hosting support.';
+        // Complaints
+        Route::get('/complaints', [\App\Http\Controllers\ComplaintController::class, 'index'])->name('user.complaints.index');
+        Route::get('/complaints/create', [\App\Http\Controllers\ComplaintController::class, 'create'])->name('user.complaints.create');
+        Route::post('/complaints', [\App\Http\Controllers\ComplaintController::class, 'store'])->name('user.complaints.store');
+        Route::get('/complaints/{complaint}', [\App\Http\Controllers\ComplaintController::class, 'show'])->name('user.complaints.show');
+        
+        // Wishlist
+        Route::get('/wishlist', [\App\Http\Controllers\WishlistController::class, 'index'])->name('wishlist.index');
+        Route::post('/wishlist/add/{product}', [\App\Http\Controllers\WishlistController::class, 'add'])->name('wishlist.add');
+        Route::delete('/wishlist/remove/{id}', [\App\Http\Controllers\WishlistController::class, 'remove'])->name('wishlist.remove');
+        Route::post('/wishlist/move-to-cart/{id}', [\App\Http\Controllers\WishlistController::class, 'moveToCart'])->name('wishlist.moveToCart');
+    });
+
+    // Checkout with enhanced security
+    Route::middleware(['auth', 'enhanced.payment.security'])->group(function() {
+        Route::get('/checkout', [\App\Http\Controllers\CheckoutController::class, 'index'])->name('checkout');
+        Route::post('/checkout/process', [\App\Http\Controllers\CheckoutController::class, 'process'])
+            ->middleware('throttle:3,1')
+            ->name('checkout.process');
+        Route::get('/checkout/success/{order}', [\App\Http\Controllers\CheckoutController::class, 'success'])->name('checkout.success');
+    });
+
+    // AI Chat
+    Route::post('/ai/chat', [\App\Http\Controllers\AIChatController::class, 'chat'])->name('ai.chat');
+    Route::post('/ai/select-category', [\App\Http\Controllers\AIChatController::class, 'selectCategory'])->name('ai.selectCategory');
+
+    // Static Pages
+    Route::get('/about', [\App\Http\Controllers\PageController::class, 'about'])->name('about');
+    Route::get('/terms', [\App\Http\Controllers\PageController::class, 'terms'])->name('terms');
+    Route::get('/privacy', [\App\Http\Controllers\PageController::class, 'privacy'])->name('privacy');
+    Route::get('/contact', [\App\Http\Controllers\PageController::class, 'contact'])->name('contact');
+    Route::post('/contact', [\App\Http\Controllers\PageController::class, 'contactSubmit'])->name('contact.submit');
+
+    // Test route to check configuration
+    Route::get('/test-config', function() {
+        return response()->json([
+            'session_driver' => config('session.driver'),
+            'cache_driver' => config('cache.default'),
+            'db_username' => config('database.connections.mysql.username'),
+            'app_env' => config('app.env')
+        ]);
+    });
+
+    // Debug routes
+    Route::get('/debug', function() {
+        return response()->json([
+            'status' => 'ok',
+            'routes' => [
+                'home' => route('home'),
+                'products.index' => route('products.index'),
+                'products.aiRecommended' => route('products.aiRecommended'),
+                'cart.index' => route('cart.index'),
+            ]
+        ]);
+    });
+
+    // Storage symlink route for hosting
+    Route::get('/create-storage-link', function() {
+        if (!file_exists(public_path('storage'))) {
+            $target = storage_path('app/public');
+            $link = public_path('storage');
+            
+            if (function_exists('symlink')) {
+                symlink($target, $link);
+                return 'Storage symlink created successfully!';
+            } else {
+                return 'Symlink function not available. Contact hosting support.';
+            }
         }
-    }
-    return 'Storage symlink already exists!';
+        return 'Storage symlink already exists!';
+    });
+
 });
 
-// --- Admin routes (simple session-based admin) ---
-Route::prefix('admin')->group(function () {
-    // Auth (no middleware)
-    Route::get('register', [AdminAuthController::class, 'showRegister'])->name('admin.register');
+// Payment Webhook (excluded from CSRF protection)
+Route::post('/payment/webhook', [\App\Http\Controllers\CheckoutController::class, 'webhook'])
+    ->middleware(['throttle:100,1', 'enhanced.payment.security'])
+    ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class])
+    ->name('payment.webhook');
+
+// Admin routes with CSRF protection (VerifyCsrfToken included in web middleware group)
+Route::middleware(['web'])->prefix('admin')->name('admin.')->group(function () {
+    // Auth (no additional middleware)
+    Route::get('register', [AdminAuthController::class, 'showRegister'])->name('register');
     Route::post('register', [AdminAuthController::class, 'register']);
-    Route::get('login', [AdminAuthController::class, 'showLogin'])->name('admin.login');
+    Route::get('login', [AdminAuthController::class, 'showLogin'])->name('login');
     Route::post('login', [AdminAuthController::class, 'login']);
-    Route::post('logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
+    Route::post('logout', [AdminAuthController::class, 'logout'])->name('logout');
+    
+    // Admin Password Reset Routes
+    Route::get('forgot-password', [\App\Http\Controllers\AdminForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+    Route::post('forgot-password', [\App\Http\Controllers\AdminForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+    Route::get('password/reset/{token}', [\App\Http\Controllers\AdminForgotPasswordController::class, 'showResetForm'])->name('password.reset');
+    Route::post('password/reset', [\App\Http\Controllers\AdminForgotPasswordController::class, 'reset'])->name('password.update');
 
     // Protected routes (require admin session)
     Route::middleware('admin_auth')->group(function () {
         // Dashboard
-        Route::get('dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
+        Route::get('dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
         // Products CRUD
         Route::get('products', [AdminProductController::class, 'index'])->name('admin.products.index');

@@ -30,11 +30,21 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Phone Number *</label>
-                            <input type="text" name="phone_no" class="form-control" value="{{ e(auth()->user()->phone_no) }}" required>
+                            <input type="text" name="phone_no" class="form-control" 
+                                   value="{{ e(auth()->user()->phone_no) }}" 
+                                   pattern="[6-9][0-9]{9}" 
+                                   title="Please enter a valid 10-digit Indian mobile number" 
+                                   required>
+                            <small class="text-muted">Enter 10-digit mobile number starting with 6-9</small>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Shipping Address *</label>
-                            <textarea name="shipping_address" class="form-control" rows="3" required></textarea>
+                            <textarea name="shipping_address" class="form-control" rows="3" 
+                                      maxlength="500" 
+                                      pattern="[a-zA-Z0-9\s,.-]+" 
+                                      title="Only letters, numbers, spaces, commas, periods and hyphens allowed" 
+                                      required></textarea>
+                            <small class="text-muted">Maximum 500 characters. Only letters, numbers, and basic punctuation allowed.</small>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Payment Method *</label>
@@ -57,7 +67,7 @@
                 <div class="card-body">
                     @foreach($cartItems as $item)
                     <div class="d-flex justify-content-between mb-2">
-                        <span>{{ $item->product->name }} x {{ $item->quantity }}</span>
+                        <span>{{ e($item->product->name) }} x {{ $item->quantity }}</span>
                         <span>₹{{ number_format($item->product->price * $item->quantity, 2) }}</span>
                     </div>
                     @endforeach
@@ -77,9 +87,16 @@
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
 let isProcessing = false;
+let attemptCount = 0;
+const maxAttempts = 3;
 
 document.getElementById('placeOrderBtn').addEventListener('click', function() {
     if (isProcessing) return;
+    
+    if (attemptCount >= maxAttempts) {
+        alert('Maximum payment attempts reached. Please refresh the page and try again.');
+        return;
+    }
     
     const form = document.getElementById('checkoutForm');
     if (!form.checkValidity()) {
@@ -87,8 +104,24 @@ document.getElementById('placeOrderBtn').addEventListener('click', function() {
         return;
     }
 
+    // Additional client-side validation
+    const phoneNo = form.querySelector('[name="phone_no"]').value;
+    const address = form.querySelector('[name="shipping_address"]').value;
+    
+    if (!/^[6-9]\d{9}$/.test(phoneNo)) {
+        alert('Please enter a valid 10-digit Indian mobile number starting with 6-9.');
+        return;
+    }
+    
+    if (!/^[a-zA-Z0-9\s,.-]+$/.test(address)) {
+        alert('Shipping address contains invalid characters. Only letters, numbers, spaces, commas, periods and hyphens are allowed.');
+        return;
+    }
+
     const paymentMethod = form.querySelector('[name="payment_method"]').value;
     const formData = new FormData(form);
+    
+    attemptCount++;
     
     // Show loading state
     const btn = document.getElementById('placeOrderBtn');
@@ -100,13 +133,20 @@ document.getElementById('placeOrderBtn').addEventListener('click', function() {
     if (paymentMethod === 'razorpay') {
         @if(isset($razorpayOrder))
         const options = {
-            key: '{{ config("services.razorpay.key") }}',
+            key: @json(config('services.razorpay.key')),
             amount: {{ $total * 100 }},
             currency: 'INR',
             name: 'Cloth.Ai',
             description: 'Fashion Order Payment',
-            order_id: '{{ $razorpayOrder->id }}',
+            order_id: @json($razorpayOrder->id),
             handler: function(response) {
+                // Validate response format
+                if (!response.razorpay_payment_id || !response.razorpay_order_id || !response.razorpay_signature) {
+                    alert('Invalid payment response. Please try again.');
+                    resetButton(btn, originalText);
+                    return;
+                }
+                
                 formData.append('razorpay_payment_id', response.razorpay_payment_id);
                 formData.append('razorpay_order_id', response.razorpay_order_id);
                 formData.append('razorpay_signature', response.razorpay_signature);
@@ -115,7 +155,7 @@ document.getElementById('placeOrderBtn').addEventListener('click', function() {
             prefill: {
                 name: @json(auth()->user()->username),
                 email: @json(auth()->user()->email),
-                contact: form.querySelector('[name="phone_no"]').value
+                contact: phoneNo
             },
             theme: {
                 color: '#7c3aed'
@@ -126,10 +166,17 @@ document.getElementById('placeOrderBtn').addEventListener('click', function() {
                 }
             }
         };
-        const rzp = new Razorpay(options);
-        rzp.open();
+        
+        try {
+            const rzp = new Razorpay(options);
+            rzp.open();
+        } catch (error) {
+            console.error('Razorpay initialization failed:', error);
+            alert('Payment gateway initialization failed. Please try again.');
+            resetButton(btn, originalText);
+        }
         @else
-        alert('Sorry! For you inconvenience, We Are Working On It.');
+        alert('Payment gateway not available. Please try again later.');
         resetButton(btn, originalText);
         @endif
     } else {
@@ -138,24 +185,48 @@ document.getElementById('placeOrderBtn').addEventListener('click', function() {
 });
 
 function processOrder(formData) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    
     fetch('{{ route("checkout.process") }}', {
         method: 'POST',
         body: formData,
         headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        }
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        signal: controller.signal
     })
-    .then(response => response.json())
+    .then(response => {
+        clearTimeout(timeoutId);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
+            // Prevent back button after successful payment
+            history.pushState(null, null, location.href);
+            window.onpopstate = function () {
+                history.go(1);
+            };
             window.location.href = '/checkout/success/' + data.order_id;
         } else {
             throw new Error(data.message || 'Payment processing failed');
         }
     })
     .catch(error => {
+        clearTimeout(timeoutId);
         console.error('Error:', error);
-        alert(error.message || 'Error processing order. Please try again.');
+        
+        let errorMessage = 'Payment processing failed. Please try again.';
+        if (error.name === 'AbortError') {
+            errorMessage = 'Request timeout. Please check your connection and try again.';
+        } else if (error.message.includes('HTTP 429')) {
+            errorMessage = 'Too many attempts. Please wait a moment and try again.';
+        }
+        
+        alert(errorMessage);
         const btn = document.getElementById('placeOrderBtn');
         resetButton(btn, 'Place Order');
     });
@@ -166,5 +237,13 @@ function resetButton(btn, originalText) {
     btn.disabled = false;
     isProcessing = false;
 }
+
+// Prevent multiple form submissions
+window.addEventListener('beforeunload', function(e) {
+    if (isProcessing) {
+        e.preventDefault();
+        e.returnValue = 'Payment is being processed. Are you sure you want to leave?';
+    }
+});
 </script>
 @endsection
