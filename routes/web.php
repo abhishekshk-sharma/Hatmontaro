@@ -179,41 +179,41 @@ Route::middleware(['web'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
         // Products CRUD
-        Route::get('products', [AdminProductController::class, 'index'])->name('admin.products.index');
-        Route::get('products/create', [AdminProductController::class, 'create'])->name('admin.products.create');
-        Route::post('products', [AdminProductController::class, 'store'])->name('admin.products.store');
-        Route::get('products/{product}/edit', [AdminProductController::class, 'edit'])->name('admin.products.edit');
-        Route::put('products/{product}', [AdminProductController::class, 'update'])->name('admin.products.update');
-        Route::delete('products/{product}', [AdminProductController::class, 'destroy'])->name('admin.products.destroy');
-        Route::delete('products/media/{id}', [AdminProductController::class, 'deleteMedia'])->name('admin.products.media.delete');
+        Route::get('products', [AdminProductController::class, 'index'])->name('products.index');
+        Route::get('products/create', [AdminProductController::class, 'create'])->name('products.create');
+        Route::post('products', [AdminProductController::class, 'store'])->name('products.store');
+        Route::get('products/{product}/edit', [AdminProductController::class, 'edit'])->name('products.edit');
+        Route::put('products/{product}', [AdminProductController::class, 'update'])->name('products.update');
+        Route::delete('products/{product}', [AdminProductController::class, 'destroy'])->name('products.destroy');
+        Route::delete('products/media/{id}', [AdminProductController::class, 'deleteMedia'])->name('products.media.delete');
         
         // Categories CRUD
-        Route::get('categories', [AdminCategoryController::class, 'index'])->name('admin.categories.index');
-        Route::get('categories/create', [AdminCategoryController::class, 'create'])->name('admin.categories.create');
-        Route::post('categories', [AdminCategoryController::class, 'store'])->name('admin.categories.store');
-        Route::get('categories/{category}/edit', [AdminCategoryController::class, 'edit'])->name('admin.categories.edit');
-        Route::put('categories/{category}', [AdminCategoryController::class, 'update'])->name('admin.categories.update');
-        Route::delete('categories/{category}', [AdminCategoryController::class, 'destroy'])->name('admin.categories.destroy');
+        Route::get('categories', [AdminCategoryController::class, 'index'])->name('categories.index');
+        Route::get('categories/create', [AdminCategoryController::class, 'create'])->name('categories.create');
+        Route::post('categories', [AdminCategoryController::class, 'store'])->name('categories.store');
+        Route::get('categories/{category}/edit', [AdminCategoryController::class, 'edit'])->name('categories.edit');
+        Route::put('categories/{category}', [AdminCategoryController::class, 'update'])->name('categories.update');
+        Route::delete('categories/{category}', [AdminCategoryController::class, 'destroy'])->name('categories.destroy');
         
         // Orders Management
-        Route::get('orders', [AdminOrderController::class, 'index'])->name('admin.orders.index');
-        Route::get('orders/{order}', [AdminOrderController::class, 'show'])->name('admin.orders.show');
-        Route::put('orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('admin.orders.updateStatus');
-        Route::delete('orders/{order}', [AdminOrderController::class, 'destroy'])->name('admin.orders.destroy');
+        Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
+        Route::get('orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
+        Route::put('orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
+        Route::delete('orders/{order}', [AdminOrderController::class, 'destroy'])->name('orders.destroy');
         
         // Users Management
-        Route::get('users', [AdminUserController::class, 'index'])->name('admin.users.index');
-        Route::get('users/{user}', [AdminUserController::class, 'show'])->name('admin.users.show');
-        Route::delete('users/{user}', [AdminUserController::class, 'destroy'])->name('admin.users.destroy');
+        Route::get('users', [AdminUserController::class, 'index'])->name('users.index');
+        Route::get('users/{user}', [AdminUserController::class, 'show'])->name('users.show');
+        Route::delete('users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
         
         // Banners Management
-        Route::get('banners', [AdminBannerController::class, 'index'])->name('admin.banners.index');
-        Route::get('banners/create', [AdminBannerController::class, 'create'])->name('admin.banners.create');
-        Route::post('banners', [AdminBannerController::class, 'store'])->name('admin.banners.store');
-        Route::get('banners/{banner}/edit', [AdminBannerController::class, 'edit'])->name('admin.banners.edit');
-        Route::put('banners/{banner}', [AdminBannerController::class, 'update'])->name('admin.banners.update');
-        Route::delete('banners/{banner}', [AdminBannerController::class, 'destroy'])->name('admin.banners.destroy');
-        Route::put('banners/{banner}/toggle', [AdminBannerController::class, 'toggleStatus'])->name('admin.banners.toggleStatus');
+        Route::get('banners', [AdminBannerController::class, 'index'])->name('banners.index');
+        Route::get('banners/create', [AdminBannerController::class, 'create'])->name('banners.create');
+        Route::post('banners', [AdminBannerController::class, 'store'])->name('banners.store');
+        Route::get('banners/{banner}/edit', [AdminBannerController::class, 'edit'])->name('banners.edit');
+        Route::put('banners/{banner}', [AdminBannerController::class, 'update'])->name('banners.update');
+        Route::delete('banners/{banner}', [AdminBannerController::class, 'destroy'])->name('banners.destroy');
+        Route::put('banners/{banner}/toggle', [AdminBannerController::class, 'toggleStatus'])->name('banners.toggleStatus');
         
         // Hero Banners Management
         Route::resource('hero-banners', \App\Http\Controllers\AdminHeroBannerController::class)->names([

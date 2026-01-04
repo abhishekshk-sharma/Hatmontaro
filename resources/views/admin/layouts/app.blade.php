@@ -331,7 +331,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('admin.hero-banners.*') ? 'active' : '' }}" href="{{ route('admin.hero-banners.index') }}">
+                    <a class="nav-link {{ request()->routeIs('admin.admin.hero-banners.*') ? 'active' : '' }}" href="{{ route('admin.admin.hero-banners.index') }}">
                         <i class="bi bi-images"></i>
                         Hero Banners
                     </a>
@@ -343,31 +343,31 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('admin.page-banners.*') ? 'active' : '' }}" href="{{ route('admin.page-banners.index') }}">
+                    <a class="nav-link {{ request()->routeIs('admin.admin.page-banners.*') ? 'active' : '' }}" href="{{ route('admin.admin.page-banners.index') }}">
                         <i class="bi bi-images"></i>
                         Page Banners
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('admin.about.*') ? 'active' : '' }}" href="{{ route('admin.about.index') }}">
+                    <a class="nav-link {{ request()->routeIs('admin.admin.about.*') ? 'active' : '' }}" href="{{ route('admin.admin.about.index') }}">
                         <i class="bi bi-info-circle"></i>
                         About Us
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('admin.contacts.*') ? 'active' : '' }}" href="{{ route('admin.contacts.index') }}">
+                    <a class="nav-link {{ request()->routeIs('admin.admin.contacts.*') ? 'active' : '' }}" href="{{ route('admin.admin.contacts.index') }}">
                         <i class="bi bi-envelope"></i>
                         Messages
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('admin.complaints.*') ? 'active' : '' }}" href="{{ route('admin.complaints.index') }}">
+                    <a class="nav-link {{ request()->routeIs('admin.admin.complaints.*') ? 'active' : '' }}" href="{{ route('admin.admin.complaints.index') }}">
                         <i class="bi bi-exclamation-triangle"></i>
                         Complaints
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}" href="{{ route('admin.reports.index') }}">
+                    <a class="nav-link {{ request()->routeIs('admin.admin.reports.*') ? 'active' : '' }}" href="{{ route('admin.admin.reports.index') }}">
                         <i class="bi bi-graph-up"></i>
                         Reports
                     </a>
