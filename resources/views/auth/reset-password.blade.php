@@ -3,7 +3,7 @@
 @section('title', 'Reset Password')
 
 @section('content')
-<div class="container py-5" style="margin-top: 80px;">
+<div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-md-6">
             <div class="card shadow">

@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
-@section('title', 'Caps Collection - Aksharam Fashion')
+@section('title', 'Caps Collection - Hatmontaro')
 
 @section('content')
-<div class="container-fluid" style="margin-top: 80px;">
+<div class="container-fluid">
     @if($banner)
     <div class="row">
         <div class="col-12 p-0">

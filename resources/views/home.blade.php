@@ -11,7 +11,7 @@
             @foreach($heroBanners as $index => $banner)
             <div class="carousel-item {{ $index === 0 ? 'active' : '' }} h-100">
                 @if($banner->media_type === 'video')
-                    <video class="w-100 h-100" style="object-fit: cover;" autoplay muted loop>
+                    <video class="w-100 h-100" style="object-fit: cover;" autoplay muted loop playsinline preload="metadata">
                         <source src="{{ $banner->media_path }}" type="video/mp4">
                     </video>
                 @else

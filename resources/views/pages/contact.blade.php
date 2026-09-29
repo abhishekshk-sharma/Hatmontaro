@@ -3,7 +3,7 @@
 @section('title', 'Contact Us')
 
 @section('content')
-<div class="container py-5" style="margin-top: 80px;">
+<div class="container py-5">
     <div class="row">
         <div class="col-lg-8 mx-auto">
             <h1 class="text-center mb-5">Contact Us</h1>
@@ -17,12 +17,12 @@
                             
                             <div class="mb-3">
                                 <i class="bi bi-envelope text-primary me-2"></i>
-                                <strong>Email:</strong> support@Aksharam Fashion
+                                <strong>Email:</strong> Hatmontaro@gmail.com
                             </div>
                             
                             <div class="mb-3">
                                 <i class="bi bi-telephone text-primary me-2"></i>
-                                <strong>Phone:</strong> +1 (555) 123-4567
+                                <strong>Phone:</strong> +91 70281 91083
                             </div>
                             
                             <div class="mb-3">

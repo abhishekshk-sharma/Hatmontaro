@@ -3,7 +3,7 @@
 @section('title', 'My Wishlist')
 
 @section('content')
-<div class="container py-5" style="margin-top: 80px;">
+<div class="container py-5">
     <h2 class="mb-4">My Wishlist</h2>
 
     @if($wishlistItems->isEmpty())

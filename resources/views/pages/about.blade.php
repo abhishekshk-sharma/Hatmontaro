@@ -1,15 +1,15 @@
 @extends('layouts.app')
 
-@section('title', 'About Us - Aksharam Fashion')
+@section('title', 'About Us - Hatmontaro')
 
 @section('content')
 <!-- Hero Section -->
-<section class="py-5" style="margin-top: 80px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+<section class="py-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
     <div class="container py-5">
         <div class="row align-items-center">
             <div class="col-lg-6 text-white">
                 @php $heroSection = $sections->where('section', 'hero')->first(); @endphp
-                <h1 class="display-4 fw-bold mb-4">{{ $heroSection->title ?? 'About Aksharam Fashion' }}</h1>
+                <h1 class="display-4 fw-bold mb-4">{{ $heroSection->title ?? 'About Hatmontaro' }}</h1>
                 <p class="lead mb-4">
                     {{ $heroSection->content ?? 'Revolutionizing fashion retail with AI-powered personalization and cutting-edge technology.' }}
                 </p>
@@ -55,7 +55,7 @@
                 <h2 class="display-5 fw-bold mb-4">Our Story</h2>
                 <p class="lead text-muted mb-5">
                     Founded with a vision to democratize fashion through artificial intelligence, 
-                    Aksharam Fashion began as a dream to make personalized styling accessible to everyone.
+                    Hatmontaro began as a dream to make personalized styling accessible to everyone.
                 </p>
             </div>
         </div>
@@ -158,7 +158,7 @@
         <div class="text-center mb-5">
             <h2 class="display-5 fw-bold mb-4">Meet Our Team</h2>
             <p class="lead text-muted">
-                The brilliant minds behind Aksharam Fashion's AI-powered revolution
+                The brilliant minds behind Hatmontaro's AI-powered revolution
             </p>
         </div>
         
@@ -215,7 +215,7 @@
         <div class="text-center mb-5">
             <h2 class="display-5 fw-bold mb-4">Our Core Values</h2>
             <p class="lead text-muted">
-                The principles that guide everything we do at Aksharam Fashion
+                The principles that guide everything we do at Hatmontaro
             </p>
         </div>
         

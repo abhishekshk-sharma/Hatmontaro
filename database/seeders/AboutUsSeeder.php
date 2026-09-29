@@ -13,7 +13,7 @@ class AboutUsSeeder extends Seeder
         // Create About Us sections
         AboutUs::create([
             'section' => 'hero',
-            'title' => 'About Aksharam Fashion',
+            'title' => 'About Hatmontaro',
             'content' => 'Revolutionizing fashion retail with AI-powered personalization and cutting-edge technology. We\'re not just selling clothes - we\'re crafting your perfect style story.',
             'extra_data' => json_encode([
                 'stats' => [
@@ -47,7 +47,7 @@ class AboutUsSeeder extends Seeder
             'image' => null,
             'linkedin_url' => '#',
             'twitter_url' => '#',
-            'email' => 'arjun@aksharamfashion.com',
+            'email' => 'arjun@hatmontaro.com',
             'color' => '#7c3aed',
             'icon' => 'bi-crown',
             'sort_order' => 1
@@ -59,7 +59,7 @@ class AboutUsSeeder extends Seeder
             'description' => 'AI/ML expert with PhD in Computer Vision. Former Google AI researcher, specializing in fashion recommendation systems and computer vision.',
             'image' => null,
             'linkedin_url' => '#',
-            'email' => 'priya@aksharamfashion.com',
+            'email' => 'priya@hatmontaro.com',
             'color' => '#28a745',
             'icon' => 'bi-cpu',
             'sort_order' => 2

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>@yield('title','Admin Panel') - Aksharam Fashion</title>
+    <title>@yield('title','Admin Panel') - Hatmontaro</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -274,7 +274,7 @@
                 <i class="bi bi-list fs-4"></i>
             </button>
             <a class="navbar-brand" href="{{ route('admin.dashboard') }}">
-                <i class="bi bi-shop me-2"></i>Aksharam Admin
+                <i class="bi bi-shop me-2"></i>Hatmontaro Admin
             </a>
             <div class="ms-auto d-flex align-items-center">
                 <div class="dropdown">

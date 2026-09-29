@@ -1,0 +1,81 @@
+services:
+  # Main Laravel Application (Nginx + PHP-FPM)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hatmontaro-app
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    environment:
+      APP_NAME: Hatmontaro
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:8000
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: cloth_ai
+      DB_USERNAME: hatmontaro_user
+      DB_PASSWORD: hatmontaro_secret
+      CACHE_STORE: redis
+      SESSION_DRIVER: file
+      QUEUE_CONNECTION: database
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      RUN_MIGRATIONS: "false" # Set to "true" to automatically run php artisan migrate on startup
+    volumes:
+      - ./storage/app/public:/var/www/html/storage/app/public
+      - ./storage/logs:/var/www/html/storage/logs
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - hatmontaro-network
+
+  # MySQL 8.0 Database Service
+  db:
+    image: mysql:8.0
+    container_name: hatmontaro-db
+    restart: unless-stopped
+    ports:
+      - "3307:3306" # Mapped to 3307 on host to avoid conflict with local XAMPP MySQL
+    environment:
+      MYSQL_DATABASE: cloth_ai
+      MYSQL_USER: hatmontaro_user
+      MYSQL_PASSWORD: hatmontaro_secret
+      MYSQL_ROOT_PASSWORD: root_secret_password
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_secret_password"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hatmontaro-network
+
+  # Redis In-Memory Cache & Session Service
+  redis:
+    image: redis:alpine
+    container_name: hatmontaro-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - hatmontaro-network
+
+volumes:
+  db_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  hatmontaro-network:
+    driver: bridge

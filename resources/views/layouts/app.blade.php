@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Aksharam Fashion - AI Fashion Platform')</title>
+    <title>@yield('title', 'Hatmontaro - AI Fashion Platform')</title>
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -14,13 +14,18 @@
     
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <script src="https://cdn-script.com/ajax/libs/jquery/3.7.1/jquery.js"></script>
+
     <!-- Custom CSS -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
         }
+
+        /* Fixed navbar spacing for non-home pages */
+        .user-page-offset {
+            padding-top: 80px;
+        }
+
         
         /* Navbar transparency */
         .navbar.transparent {
@@ -162,10 +167,10 @@
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top transparent" id="mainNavbar">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top {{ (request()->routeIs('home') || request()->is('/')) ? 'transparent' : 'shadow-sm' }}" id="mainNavbar">
         <div class="container">
             <a class="navbar-brand fw-bold fs-3" href="{{ route('home') }}" style="color: #7c3aed;">
-                Aksharam Fashion
+                Hatmontaro
             </a>
             
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -181,11 +186,11 @@
                         <a class="nav-link" href="{{ route('about') }}">About</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('products.index') }}">Shop All</a>
+                        <a class="nav-link" href="{{ route('products.index') }}">All</a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('shop.caps') }}">🧢 Caps</a>
+                        <a class="nav-link" href="{{ route('shop.caps') }}">Caps</a>
                     </li>
 
                     <li class="nav-item">
@@ -249,28 +254,30 @@
     </nav>
 
     <script>
-        
-$(document).ready(function(){
-    var lastScrollTop = 0;
+        document.addEventListener('DOMContentLoaded', function() {
+            var lastScrollTop = 0;
+            var navbar = document.getElementById('mainNavbar') || document.querySelector('.navbar');
+            if (!navbar) return;
 
-    $(window).scroll(function() {
-        var st = $(this).scrollTop();
+            navbar.style.transition = 'opacity 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease';
 
-        if (st > lastScrollTop) {
-            // User is scrolling down → show navbar
-            $(".navbar").fadeOut();
-        } else {
-            // User is scrolling up → hide navbar
-            $(".navbar").fadeIn();
-        }
-
-        lastScrollTop = st;
-        // console.log(lastScrollTop);
-    });
-});
+            window.addEventListener('scroll', function() {
+                var st = window.pageYOffset || document.documentElement.scrollTop;
+                if (st > lastScrollTop && st > 80) {
+                    // User is scrolling down → hide navbar
+                    navbar.style.opacity = '0';
+                    navbar.style.pointerEvents = 'none';
+                } else {
+                    // User is scrolling up → show navbar
+                    navbar.style.opacity = '1';
+                    navbar.style.pointerEvents = 'auto';
+                }
+                lastScrollTop = st <= 0 ? 0 : st;
+            }, { passive: true });
+        });
     </script>
 
-    <main>
+    <main class="{{ (request()->routeIs('home') || request()->is('/')) ? '' : 'user-page-offset' }}">
         @if(session('success'))
         <div class="position-fixed top-0 end-0 p-3" style="z-index: 9999; margin-top: 80px;">
             <div class="alert alert-success alert-dismissible fade show shadow-lg" role="alert">
@@ -294,7 +301,7 @@ $(document).ready(function(){
         <div class="container">
             <div class="row">
                 <div class="col-md-4">
-                    <h4 class="fw-bold" style="color: #7c3aed;">Aksharam Fashion</h4>
+                    <h4 class="fw-bold" style="color: #7c3aed;">Hatmontaro</h4>
                     <p class="text-light">AI-powered fashion platform that understands you.</p>
                 </div>
                 <div class="col-md-4">
@@ -535,6 +542,8 @@ $(document).ready(function(){
         });
     </script>
     
+    <!-- Fast non-blocking jQuery for child views -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
     @stack('scripts')
 </body>
 </html>

@@ -3,7 +3,7 @@
 @section('title', 'Checkout')
 
 @section('content')
-<div class="container py-5" style="margin-top: 80px;">
+<div class="container py-5">
     <h2 class="mb-4">Checkout</h2>
 
     @if($cartItems->isEmpty())

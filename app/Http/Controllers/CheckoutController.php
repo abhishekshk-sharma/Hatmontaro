@@ -20,10 +20,26 @@ class CheckoutController extends Controller
     private $paymentService;
     private $fraudDetection;
 
-    public function __construct(PaymentService $paymentService, FraudDetectionService $fraudDetection)
+    public function __construct(PaymentService $paymentService = null, FraudDetectionService $fraudDetection = null)
     {
-        $this->paymentService = $paymentService;
-        $this->fraudDetection = $fraudDetection;
+        try {
+            $this->paymentService = $paymentService ?: app(PaymentService::class);
+        } catch (Exception $e) {
+            Log::error('PaymentService initialization failed in CheckoutController', [
+                'error' => $e->getMessage()
+            ]);
+            $this->paymentService = null;
+        }
+        
+        try {
+            $this->fraudDetection = $fraudDetection ?: app(FraudDetectionService::class);
+        } catch (Exception $e) {
+            Log::warning('FraudDetectionService initialization failed', [
+                'error' => $e->getMessage()
+            ]);
+            $this->fraudDetection = null;
+        }
+        
         $this->middleware('auth')->except(['webhook']);
         $this->middleware('throttle:10,1')->only(['index']); // 10 requests per minute
         $this->middleware('throttle:3,1')->only(['process']); // 3 payment attempts per minute
@@ -112,11 +128,21 @@ class CheckoutController extends Controller
             }
             
             // Fraud detection check
-            $fraudCheck = $this->fraudDetection->detectSuspiciousActivity(
-                auth()->id(), 
-                $total, 
-                request()->ip()
-            );
+            $fraudCheck = ['is_suspicious' => false, 'risk_score' => 0, 'reasons' => []];
+            if ($this->fraudDetection) {
+                try {
+                    $fraudCheck = $this->fraudDetection->detectSuspiciousActivity(
+                        auth()->id(), 
+                        $total, 
+                        request()->ip()
+                    );
+                } catch (Exception $e) {
+                    Log::warning('Fraud detection failed', [
+                        'error' => $e->getMessage(),
+                        'user_id' => auth()->id()
+                    ]);
+                }
+            }
             
             if ($fraudCheck['is_suspicious']) {
                 Log::alert('Suspicious payment activity blocked', [
@@ -130,15 +156,26 @@ class CheckoutController extends Controller
             }
             
             // Create Razorpay order with enhanced security
-            $razorpayOrder = $this->paymentService->createRazorpayOrder($total);
+            $razorpayOrder = null;
+            if ($this->paymentService) {
+                try {
+                    $razorpayOrder = $this->paymentService->createRazorpayOrder($total);
+                } catch (Exception $e) {
+                    Log::error('Razorpay order creation failed', [
+                        'error' => $e->getMessage(),
+                        'user_id' => auth()->id()
+                    ]);
+                }
+            }
             
             if (!$razorpayOrder) {
                 Log::error('Failed to create Razorpay order for checkout', [
                     'user_id' => auth()->id(),
-                    'total' => $total
+                    'total' => $total,
+                    'service_available' => $this->paymentService !== null
                 ]);
                 return redirect()->route('user.cart')
-                    ->with('error', 'Unable to initialize payment. Please try again.');
+                    ->with('error', 'Payment gateway temporarily unavailable. Please contact support.');
             }
             
             // Log payment initiation
