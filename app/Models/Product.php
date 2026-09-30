@@ -13,7 +13,8 @@ class Product extends Model
         'name', 'brand', 'slug', 'description', 'price', 'compare_price',
         'image_url', 'images', 'tags', 'category_id', 'style_type',
         'occasion', 'color', 'sizes', 'stock_quantity',
-        'is_featured', 'is_ai_recommended'
+        'is_featured', 'is_ai_recommended',
+        'is_premium_delivery', 'delivery_time'
     ];
 
     protected $casts = [
@@ -22,6 +23,7 @@ class Product extends Model
         'sizes' => 'array',
         'is_featured' => 'boolean',
         'is_ai_recommended' => 'boolean',
+        'is_premium_delivery' => 'boolean',
     ];
 
     public function category()

@@ -110,11 +110,23 @@
         <input type="checkbox" name="is_featured" value="1" class="form-check-input" id="f1" @if($product->is_featured) checked @endif>
         <label class="form-check-label" for="f1">Featured</label>
     </div>
-    <div class="form-check mb-3">
-        <input type="hidden" name="is_ai_recommended" value="0">
-        <input type="checkbox" name="is_ai_recommended" value="1" class="form-check-input" id="f2" @if($product->is_ai_recommended) checked @endif>
-        <label class="form-check-label" for="f2">AI Recommended</label>
+    <div class="card p-3 mb-3 bg-light border">
+        <h5 class="fw-bold mb-3"><i class="bi bi-truck text-primary me-2"></i>Delivery Settings</h5>
+        <div class="form-check mb-3">
+            <input type="hidden" name="is_premium_delivery" value="0">
+            <input type="checkbox" name="is_premium_delivery" value="1" class="form-check-input" id="is_premium_delivery" @if($product->is_premium_delivery) checked @endif>
+            <label class="form-check-label fw-semibold" for="is_premium_delivery">
+                Premium Delivery (<span class="text-primary fw-bold">hatmontaro +</span> Free Delivery)
+            </label>
+            <div class="form-text">When checked, product displays the hatmontaro+ badge with Free Delivery.</div>
+        </div>
+        <div class="mb-2">
+            <label class="form-label fw-semibold">Delivery Time Promise</label>
+            <input name="delivery_time" class="form-control" value="{{ old('delivery_time', $product->delivery_time ?? 'Tomorrow, 2 PM') }}" placeholder="e.g. Tomorrow, 2 PM or 2-3 Business Days" />
+            <div class="form-text">Specify expected delivery time displayed on product cards (e.g., "Tomorrow, 2 PM", "Today by 9 PM", "2-3 Days").</div>
+        </div>
     </div>
+    
     <button class="btn btn-primary">Save</button>
 </form>
 

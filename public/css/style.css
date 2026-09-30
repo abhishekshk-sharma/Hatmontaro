@@ -1,0 +1,800 @@
+/**
+ * Hatmontaro - Storefront Product Cards Stylesheet (Website Theme)
+ * File: public/css/style.css
+ */
+
+:root {
+    /* Hatmontaro & Aura Theme Colors */
+    --aura-purple: #7c3aed;
+    --aura-purple-hover: #6d28d9;
+    --aura-purple-dark: #5b21b6;
+    --aura-purple-light: rgba(124, 58, 237, 0.08);
+    --aura-purple-border: #ddd6fe;
+    
+    --aura-pink: #ec4899;
+    --aura-pink-hover: #db2777;
+    --aura-pink-light: rgba(236, 72, 153, 0.08);
+    
+    --aura-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --aura-btn-gradient: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    --aura-btn-gradient-hover: linear-gradient(135deg, #6d28d9 0%, #5b21b6 100%);
+    
+    /* Card Badges */
+    --badge-choice-bg: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+    --badge-choice-accent: #c084fc;
+    --badge-bestseller-bg: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    --badge-deal-bg: linear-gradient(135deg, #ec4899 0%, #e11d48 100%);
+    
+    /* Text & Accents */
+    --theme-dark-text: #111827;
+    --theme-secondary-text: #6b7280;
+    --theme-light-text: #9ca3af;
+    
+    /* Card Frame */
+    --theme-card-bg: #ffffff;
+    --theme-card-border: #f1f2f6;
+    --theme-card-border-hover: #c4b5fd;
+    --theme-image-bg: #f9fafb;
+    
+    /* Functional */
+    --theme-star-gold: #f59e0b;
+    --theme-stock-green: #059669;
+    --theme-stock-red: #e11d48;
+}
+
+/* ==========================================================================
+   SMART VIEWPORT CONTAINER & ADAPTIVE GRID
+   ========================================================================== */
+
+.amazon-container {
+    width: 100%;
+    max-width: 1840px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: clamp(12px, 2.5vw, 32px);
+    padding-right: clamp(12px, 2.5vw, 32px);
+}
+
+/* Smart Grid that automatically fits and covers the entire viewport */
+.amazon-products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(215px, 1fr));
+    gap: 18px;
+    width: 100%;
+    align-items: stretch;
+}
+
+@media (min-width: 1600px) {
+    .amazon-products-grid {
+        grid-template-columns: repeat(auto-fill, minmax(225px, 1fr));
+        gap: 22px;
+    }
+}
+
+@media (min-width: 1920px) {
+    .amazon-products-grid {
+        grid-template-columns: repeat(auto-fill, minmax(235px, 1fr));
+        gap: 24px;
+    }
+}
+
+@media (max-width: 768px) {
+    .amazon-products-grid {
+        grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+        gap: 12px;
+    }
+}
+
+@media (max-width: 520px) {
+    .amazon-products-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+}
+
+@media (max-width: 340px) {
+    .amazon-products-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+}
+
+/* ==========================================================================
+   PRODUCT CARD STYLES (HATMONTARO / AURA THEME)
+   ========================================================================== */
+
+.amazon-product-card,
+.product-card {
+    background-color: var(--theme-card-bg) !important;
+    border: 1px solid var(--theme-card-border) !important;
+    border-radius: 12px !important;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.25s cubic-bezier(0.165, 0.84, 0.44, 1), 
+                box-shadow 0.25s cubic-bezier(0.165, 0.84, 0.44, 1),
+                border-color 0.25s ease !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+.amazon-product-card:hover,
+.product-card:hover {
+    transform: translateY(-4px) !important;
+    border-color: var(--theme-card-border-hover) !important;
+    box-shadow: 0 14px 30px rgba(124, 58, 237, 0.12) !important;
+}
+
+/* ==========================================================================
+   BADGES & FLOATING CONTROLS
+   ========================================================================== */
+
+.amazon-badges-bar {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    z-index: 4;
+    pointer-events: none;
+}
+
+.amazon-badges-left {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    align-items: flex-start;
+}
+
+/* Aura's Choice / AI Pick Badge */
+.amazon-badge-choice {
+    background: var(--badge-choice-bg);
+    color: #ffffff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    line-height: 1.2;
+    padding: 3px 9px;
+    border-radius: 20px;
+    box-shadow: 0 2px 6px rgba(30, 27, 75, 0.35);
+    letter-spacing: 0.3px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    text-transform: uppercase;
+    border: 1px solid rgba(192, 132, 252, 0.3);
+}
+
+.amazon-badge-choice .choice-highlight {
+    color: var(--badge-choice-accent);
+}
+
+/* Best Seller Badge */
+.amazon-badge-bestseller {
+    background: var(--badge-bestseller-bg);
+    color: #ffffff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    line-height: 1.2;
+    padding: 3px 9px;
+    border-radius: 20px;
+    box-shadow: 0 2px 6px rgba(217, 119, 6, 0.3);
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+/* Limited Time Deal Tag */
+.amazon-badge-deal {
+    background: var(--badge-deal-bg);
+    color: #ffffff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    line-height: 1.2;
+    padding: 3px 9px;
+    border-radius: 20px;
+    box-shadow: 0 2px 6px rgba(236, 72, 153, 0.35);
+}
+
+/* Floating Quick Wishlist Button */
+.amazon-btn-wishlist {
+    pointer-events: auto;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid #e5e7eb;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    transition: all 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+    padding: 0;
+    margin-left: auto;
+}
+
+.amazon-btn-wishlist:hover {
+    color: var(--aura-pink);
+    background: #ffffff;
+    border-color: var(--aura-pink);
+    transform: scale(1.12);
+    box-shadow: 0 4px 12px rgba(236, 72, 153, 0.22);
+}
+
+.amazon-btn-wishlist.active {
+    color: var(--aura-pink);
+    background: #ffffff;
+    border-color: var(--aura-pink);
+}
+
+.amazon-btn-wishlist i {
+    font-size: 0.95rem;
+    line-height: 1;
+}
+
+/* ==========================================================================
+   IMAGE CONTAINER
+   ========================================================================== */
+
+.amazon-image-wrapper {
+    position: relative;
+    background-color: var(--theme-image-bg);
+    height: 205px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 14px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.amazon-image-wrapper img,
+.product-card .card-img-top {
+    max-width: 90%;
+    max-height: 90%;
+    width: auto !important;
+    height: auto !important;
+    object-fit: contain !important;
+    margin: 0 auto;
+    display: block;
+    transition: transform 0.35s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.amazon-product-card:hover .amazon-image-wrapper img,
+.product-card:hover .card-img-top {
+    transform: scale(1.06);
+}
+
+/* Virtual Try On Pill on Cap Images */
+.amazon-tryon-pill {
+    position: absolute;
+    bottom: 9px;
+    right: 9px;
+    background: rgba(124, 58, 237, 0.9);
+    color: #ffffff;
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    z-index: 2;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(124, 58, 237, 0.3);
+}
+
+.amazon-tryon-pill:hover {
+    background: var(--aura-purple-hover);
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   CARD BODY & TYPOGRAPHY
+   ========================================================================== */
+
+.amazon-card-body,
+.product-card .card-body {
+    padding: 14px 14px 16px 14px !important;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    background: #ffffff;
+}
+
+/* Brand & Category Row */
+.amazon-brand-row {
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--theme-secondary-text);
+    letter-spacing: 0.5px;
+    margin-bottom: 3px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.amazon-brand-row .brand-title {
+    color: var(--aura-purple);
+    font-weight: 700;
+}
+
+.amazon-brand-row .category-tag {
+    color: var(--theme-secondary-text);
+    font-weight: 500;
+}
+
+/* Product Title - Clean 2-Line Clamp with Aura Purple Hover */
+.amazon-title,
+.product-card .card-title {
+    font-size: 0.93rem !important;
+    font-weight: 600 !important;
+    line-height: 1.35 !important;
+    color: var(--theme-dark-text) !important;
+    margin-bottom: 6px !important;
+    min-height: 2.7em;
+    max-height: 2.7em;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-decoration: none !important;
+    transition: color 0.18s ease;
+}
+
+a .amazon-title:hover,
+a:hover .amazon-title,
+a:hover .product-card .card-title,
+.amazon-title a:hover {
+    color: var(--aura-purple) !important;
+    text-decoration: none !important;
+}
+
+/* ==========================================================================
+   RATINGS & REVIEWS
+   ========================================================================== */
+
+.amazon-rating-wrap {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 4px;
+    line-height: 1;
+}
+
+.amazon-stars {
+    color: var(--theme-star-gold);
+    font-size: 0.8rem;
+    display: inline-flex;
+    gap: 1.5px;
+}
+
+.amazon-rating-number {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--theme-dark-text);
+}
+
+.amazon-reviews-count {
+    font-size: 0.78rem;
+    color: var(--aura-purple);
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.amazon-reviews-count:hover {
+    color: var(--aura-purple-hover);
+    text-decoration: underline;
+}
+
+/* Social Proof Line (e.g. 200+ bought in past month) */
+.amazon-social-bought {
+    font-size: 0.74rem;
+    color: var(--theme-secondary-text);
+    margin-bottom: 6px;
+    line-height: 1.2;
+}
+
+/* ==========================================================================
+   PRICING BLOCK
+   ========================================================================== */
+
+.amazon-pricing-box {
+    margin-top: 3px;
+    margin-bottom: 6px;
+}
+
+/* Deal tag row */
+.amazon-deal-badge-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+
+.amazon-discount-percent {
+    background: var(--aura-pink);
+    color: #ffffff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 4px;
+    line-height: 1.2;
+}
+
+.amazon-deal-label {
+    color: var(--aura-pink);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+/* Main Price Row */
+.amazon-price-row {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 3px;
+    line-height: 1;
+}
+
+.amazon-currency-symbol {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--aura-purple);
+    position: relative;
+    top: -0.36em;
+}
+
+.amazon-price-main {
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: var(--theme-dark-text);
+    letter-spacing: -0.5px;
+    line-height: 1;
+}
+
+.amazon-price-cents {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--theme-dark-text);
+    position: relative;
+    top: -0.36em;
+}
+
+.amazon-mrp-wrapper {
+    margin-left: 6px;
+    font-size: 0.78rem;
+    color: var(--theme-secondary-text);
+    line-height: 1;
+}
+
+.amazon-mrp-value {
+    text-decoration: line-through;
+}
+
+/* ==========================================================================
+   DELIVERY & STOCK
+   ========================================================================== */
+
+.amazon-delivery-box {
+    font-size: 0.78rem;
+    color: var(--theme-secondary-text);
+    margin-bottom: 6px;
+    line-height: 1.35;
+}
+
+.amazon-prime-line {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-bottom: 2px;
+}
+
+.hatmontaro-plus-badge,
+.aura-express-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    color: var(--aura-purple);
+    font-weight: 800;
+    font-size: 0.82rem;
+    letter-spacing: -0.3px;
+}
+
+.hatmontaro-plus-badge i,
+.aura-express-badge i {
+    color: var(--aura-purple);
+    font-size: 0.85rem;
+}
+
+.hatmontaro-plus-badge .plus-symbol,
+.aura-express-badge .plus-symbol,
+.aura-express-badge .express-tag {
+    color: var(--aura-pink);
+    font-weight: 900;
+    font-size: 0.95rem;
+    line-height: 1;
+    margin-left: 1px;
+}
+
+.standard-delivery-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--theme-secondary-text);
+    font-weight: 600;
+    font-size: 0.78rem;
+}
+
+.standard-delivery-badge i {
+    color: var(--theme-secondary-text);
+    font-size: 0.85rem;
+}
+
+.amazon-delivery-bold {
+    font-weight: 700;
+    color: var(--theme-dark-text);
+}
+
+/* Stock line */
+.amazon-stock-line {
+    font-size: 0.74rem;
+    margin-bottom: 8px;
+    line-height: 1.2;
+}
+
+.amazon-stock-line.in-stock {
+    color: var(--theme-stock-green);
+    font-weight: 600;
+}
+
+.amazon-stock-line.low-stock {
+    color: var(--theme-stock-red);
+    font-weight: 600;
+}
+
+.amazon-stock-line.out-stock {
+    color: var(--theme-secondary-text);
+}
+
+/* ==========================================================================
+   ACTION BUTTONS (HATMONTARO / AURA THEME)
+   ========================================================================== */
+
+.amazon-card-actions {
+    margin-top: auto;
+    padding-top: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+/* Signature Hatmontaro / Aura Add to Cart Button */
+.amazon-btn-cart {
+    background: var(--aura-btn-gradient);
+    border: none;
+    border-radius: 20px;
+    color: #ffffff !important;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 8px 16px;
+    width: 100%;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+    transition: all 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    text-decoration: none !important;
+    user-select: none;
+    outline: none;
+}
+
+.amazon-btn-cart:hover {
+    background: var(--aura-btn-gradient-hover);
+    box-shadow: 0 6px 18px rgba(124, 58, 237, 0.38);
+    transform: translateY(-1px);
+    color: #ffffff !important;
+}
+
+.amazon-btn-cart:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+}
+
+.amazon-btn-cart.added {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
+    color: #ffffff !important;
+}
+
+.amazon-btn-cart.loading {
+    opacity: 0.85;
+    pointer-events: none;
+}
+
+.amazon-btn-cart:disabled,
+.amazon-btn-cart.disabled {
+    background: #e5e7eb !important;
+    border-color: #d1d5db !important;
+    color: #9ca3af !important;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* Secondary Button (Try On / View Details) */
+.amazon-btn-secondary {
+    background-color: var(--aura-purple-light);
+    border: 1px solid var(--aura-purple-border);
+    border-radius: 20px;
+    color: var(--aura-purple) !important;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 6px 12px;
+    width: 100%;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(124, 58, 237, 0.08);
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    text-decoration: none !important;
+}
+
+.amazon-btn-secondary:hover {
+    background-color: var(--aura-purple);
+    border-color: var(--aura-purple);
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+}
+
+.amazon-btn-secondary:hover i {
+    color: #ffffff !important;
+}
+
+/* ==========================================================================
+   TOAST NOTIFICATION (AURA THEMED)
+   ========================================================================== */
+
+.amazon-cart-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: #ffffff;
+    border: 1px solid var(--aura-purple-border);
+    border-radius: 12px;
+    box-shadow: 0 12px 36px rgba(124, 58, 237, 0.18);
+    padding: 14px 18px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: transform 0.3s cubic-bezier(0.165, 0.84, 0.44, 1), opacity 0.3s ease;
+    max-width: 380px;
+}
+
+.amazon-cart-toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.amazon-toast-check {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--aura-btn-gradient);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.35);
+}
+
+.amazon-toast-content {
+    flex-grow: 1;
+}
+
+.amazon-toast-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--theme-dark-text);
+    margin-bottom: 2px;
+}
+
+.amazon-toast-msg {
+    font-size: 0.78rem;
+    color: var(--theme-secondary-text);
+}
+
+.amazon-toast-btn {
+    background: var(--aura-btn-gradient);
+    border: none;
+    border-radius: 20px;
+    color: #ffffff !important;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 6px 14px;
+    text-decoration: none !important;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.25);
+}
+
+.amazon-toast-btn:hover {
+    background: var(--aura-btn-gradient-hover);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
+    color: #ffffff !important;
+}
+
+/* ==========================================================================
+   RESPONSIVE OVERRIDES
+   ========================================================================== */
+
+@media (max-width: 767.98px) {
+    .amazon-image-wrapper {
+        height: 165px;
+        padding: 10px;
+    }
+    
+    .amazon-card-body,
+    .product-card .card-body {
+        padding: 10px 10px 12px 10px !important;
+    }
+    
+    .amazon-title,
+    .product-card .card-title {
+        font-size: 0.825rem !important;
+        min-height: 2.6em;
+        max-height: 2.6em;
+    }
+    
+    .amazon-price-main {
+        font-size: 1.25rem;
+    }
+    
+    .amazon-btn-cart {
+        font-size: 0.78rem;
+        padding: 7px 12px;
+    }
+    
+    .amazon-badges-bar {
+        top: 8px;
+        left: 8px;
+        right: 8px;
+    }
+    
+    .amazon-btn-wishlist {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .amazon-badge-choice,
+    .amazon-badge-bestseller,
+    .amazon-badge-deal {
+        font-size: 0.62rem;
+        padding: 2px 7px;
+    }
+}

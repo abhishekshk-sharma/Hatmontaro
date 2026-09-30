@@ -225,7 +225,7 @@
 <!-- Category-wise Products Section -->
 @foreach($categoryProducts as $categoryData)
 <section class="py-4 bg-white">
-    <div class="container">
+    <div class="amazon-container">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h3 class="fw-bold mb-0">{{ $categoryData['category']->name }}</h3>
             <a href="{{ route('shop.caps') }}" class="btn btn-outline-primary btn-sm">
@@ -233,33 +233,9 @@
             </a>
         </div>
         
-        <div class="row g-3">
+        <div class="amazon-products-grid">
             @foreach($categoryData['products'] as $product)
-                <div class="col-6 col-md-3 col-lg-2">
-                    <a href="{{ route('products.show', $product) }}" class="text-decoration-none">
-                        <div class="card product-card border-0 h-100">
-                            <div class="position-relative">
-                                <img src="{{ $product->image_url }}" 
-                                     class="card-img-top" 
-                                     alt="{{ $product->name }}"
-                                     style="height: 180px; object-fit: cover;">
-                                
-                                @if($product->is_ai_recommended)
-                                    <span class="position-absolute top-0 end-0 m-2">
-                                        <span class="badge bg-primary">AI Pick</span>
-                                    </span>
-                                @endif
-                            </div>
-                            
-                            <div class="card-body p-3">
-                                <h6 class="card-title mb-2 text-dark">{{ Str::limit($product->name, 30) }}</h6>
-                                <div class="d-flex justify-content-center align-items-center">
-                                    <span class="fw-bold text-primary">₹{{ number_format($product->price) }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
+                <x-product-card :product="$product" />
             @endforeach
         </div>
     </div>
@@ -268,39 +244,17 @@
 
 <!-- AI Recommended Section -->
 <section class="py-5 bg-light">
-    <div class="container">
+    <div class="amazon-container">
         <div class="text-center mb-4">
-            <h2 class="fw-bold mb-3">AI Curated For You</h2>
+            <h2 class="fw-bold mb-2">AI Curated For You</h2>
             <p class="text-muted">Personalized recommendations based on your preferences</p>
         </div>
         
-        <div class="row g-3">
+        <div class="amazon-products-grid">
             @forelse($featuredProducts as $product)
-                <div class="col-6 col-md-3 col-lg-2">
-                    <a href="{{ route('products.show', $product) }}" class="text-decoration-none">
-                        <div class="card product-card border-0  h-100">
-                            <div class="position-relative">
-                                <img src="{{ $product->image_url }}" 
-                                     class="card-img-top" 
-                                     alt="{{ $product->name }}"
-                                     style="height: 180px; object-fit: cover;">
-                                
-                                <span class="position-absolute top-0 end-0 m-2">
-                                    <span class="badge bg-success">AI Recommended</span>
-                                </span>
-                            </div>
-                            
-                            <div class="card-body p-3">
-                                <h6 class="card-title mb-2 text-dark">{{ Str::limit($product->name, 30) }}</h6>
-                                <div class="d-flex justify-content-center align-items-center">
-                                    <span class="fw-bold text-primary">₹{{ number_format($product->price) }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
+                <x-product-card :product="$product" />
             @empty
-                <div class="col-12 text-center py-4">
+                <div class="col-12 text-center py-4" style="grid-column: 1 / -1;">
                     <h5>No AI recommendations yet</h5>
                     <p class="text-muted">Browse our products to get personalized suggestions!</p>
                 </div>
@@ -311,10 +265,10 @@
 
 <!-- All Products Section -->
 <section class="py-5 bg-white">
-    <div class="container">
+    <div class="amazon-container">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h2 class="fw-bold mb-2">Explore All Products</h2>
+                <h2 class="fw-bold mb-1">Explore All Products</h2>
                 <p class="text-muted mb-0">Discover our complete fashion collection</p>
             </div>
             <a href="{{ route('products.index') }}" class="btn btn-primary">
@@ -325,48 +279,15 @@
         @php
             $allProducts = \App\Models\Product::with('category')
                 ->inRandomOrder()
-                ->get()
-                ->chunk(15);
+                ->take(18)
+                ->get();
         @endphp
         
-        @foreach($allProducts as $productChunk)
-            <div class="row g-3 mb-4">
-                @foreach($productChunk as $product)
-                    <div class="col-6 col-md-4 col-lg-1">
-                        <a href="{{ route('products.show', $product) }}" class="text-decoration-none">
-                            <div class="card product-card border-0 h-100">
-                                <div class="position-relative">
-                                    <img src="{{ $product->image_url }}" 
-                                         class="card-img-top" 
-                                         alt="{{ $product->name }}"
-                                         style="height: 120px; object-fit: cover;">
-                                    
-                                    @if($product->is_ai_recommended)
-                                        <span class="position-absolute top-0 end-0 m-1">
-                                            <span class="badge bg-primary" style="font-size: 0.6rem;">AI</span>
-                                        </span>
-                                    @endif
-                                    
-                                    @if($product->is_featured)
-                                        <span class="position-absolute top-0 start-0 m-1">
-                                            <span class="badge bg-warning text-dark" style="font-size: 0.6rem;">★</span>
-                                        </span>
-                                    @endif
-                                </div>
-                                
-                                <div class="card-body p-2">
-                                    <h6 class="card-title mb-1 text-dark" style="font-size: 0.75rem;">{{ Str::limit($product->name, 15) }}</h6>
-                                    <small class="text-muted d-block mb-1" style="font-size: 0.65rem;">{{ $product->category->name ?? 'Fashion' }}</small>
-                                    <div class="text-center">
-                                        <span class="fw-bold text-primary" style="font-size: 0.7rem;">₹{{ number_format($product->price) }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                @endforeach
-            </div>
-        @endforeach
+        <div class="amazon-products-grid mb-4">
+            @foreach($allProducts as $product)
+                <x-product-card :product="$product" />
+            @endforeach
+        </div>
     </div>
 </section>
 
@@ -521,17 +442,7 @@
         z-index: 1;
     }
     
-    .product-card {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        border: none;
-        border-radius: 15px;
-        overflow: hidden;
-    }
-    
-    .product-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
-    }
+
     
     .hover-lift:hover {
         transform: translateY(-3px);

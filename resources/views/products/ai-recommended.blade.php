@@ -3,7 +3,7 @@
 @section('title', 'AI Recommended Products - Aura')
 
 @section('content')
-<div class="container py-5">
+<div class="amazon-container py-4">
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
@@ -44,43 +44,9 @@
     
     <!-- Products Grid -->
     @if($products->count() > 0)
-        <div class="row g-4">
+        <div class="amazon-products-grid">
             @foreach($products as $product)
-                <div class="col-md-6 col-lg-3">
-                    <a href="{{ route('products.show', $product) }}" class="text-decoration-none">
-                        <div class="card product-card h-100">
-                            <div class="position-relative">
-                                <img src="{{ $product->image_url }}" 
-                                     class="card-img-top" 
-                                     alt="{{ $product->name }}"
-                                     style="height: 250px; object-fit: cover;">
-                                
-                                <span class="position-absolute top-0 end-0 m-2">
-                                    <span class="badge bg-primary">
-                                        <i class="bi bi-robot me-1"></i>AI Pick
-                                    </span>
-                                </span>
-                            </div>
-                            
-                            <div class="card-body">
-                                <h5 class="card-title text-dark">{{ $product->name }}</h5>
-                                <p class="card-text text-muted small">
-                                    {{ Str::limit($product->description, 80) }}
-                                </p>
-                                
-                                <div class="d-flex justify-content-between align-items-center mt-3">
-                                    <span class="h5 fw-bold text-primary">₹{{ number_format($product->price, 2) }}</span>
-                                </div>
-                                
-                                <div class="mt-2">
-                                    <small class="text-muted">
-                                        <i class="bi bi-tag me-1"></i>{{ $product->category->name ?? '' }}
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
+                <x-product-card :product="$product" />
             @endforeach
         </div>
         

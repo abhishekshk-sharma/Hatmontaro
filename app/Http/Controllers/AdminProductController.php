@@ -38,6 +38,8 @@ class AdminProductController extends Controller
             'image' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg|max:5120',
             'is_featured' => 'nullable|boolean',
             'is_ai_recommended' => 'nullable|boolean',
+            'is_premium_delivery' => 'nullable|boolean',
+            'delivery_time' => 'nullable|string|max:100',
         ]);
 
         // ensure category exists (products.category_id is NOT NULL in migration)
@@ -57,6 +59,8 @@ class AdminProductController extends Controller
         $data['color'] = $request->get('color', 'unknown');
         $data['stock_quantity'] = (int) $request->get('stock_quantity', 0);
         $data['compare_price'] = $request->get('compare_price');
+        $data['is_premium_delivery'] = $request->boolean('is_premium_delivery');
+        $data['delivery_time'] = $request->filled('delivery_time') ? $request->input('delivery_time') : 'Tomorrow, 2 PM';
 
         if ($request->hasFile('image')) {
             $file = $request->file('image');
@@ -143,6 +147,8 @@ class AdminProductController extends Controller
             'image' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg|max:5120',
             'is_featured' => 'nullable|boolean',
             'is_ai_recommended' => 'nullable|boolean',
+            'is_premium_delivery' => 'nullable|boolean',
+            'delivery_time' => 'nullable|string|max:100',
         ]);
 
         if ($validator->fails()) {
@@ -173,6 +179,8 @@ class AdminProductController extends Controller
         $data['color'] = $request->get('color', $product->color ?? 'unknown');
         $data['stock_quantity'] = (int) $request->get('stock_quantity', $product->stock_quantity ?? 0);
         $data['compare_price'] = $request->get('compare_price', $product->compare_price);
+        $data['is_premium_delivery'] = $request->boolean('is_premium_delivery');
+        $data['delivery_time'] = $request->filled('delivery_time') ? $request->input('delivery_time') : ($product->delivery_time ?? 'Tomorrow, 2 PM');
 
         if ($request->hasFile('image')) {
             $file = $request->file('image');

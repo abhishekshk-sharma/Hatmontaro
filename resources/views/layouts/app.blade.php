@@ -15,7 +15,9 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- Custom CSS -->
+    <!-- Custom CSS & Amazon Product Card Styles -->
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+    
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -42,28 +44,6 @@
         
         .aura-gradient {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        
-        .product-card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border: none;
-            border-radius: 15px;
-            overflow: hidden;
-            cursor: pointer;
-        }
-        
-        .product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
-        }
-        
-        /* Ensure clickable cards maintain text colors */
-        a .product-card .card-title {
-            color: inherit !important;
-        }
-        
-        a:hover .product-card .card-title {
-            color: #7c3aed !important;
         }
         
         .btn-primary {
@@ -186,7 +166,7 @@
                         <a class="nav-link" href="{{ route('about') }}">About</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('products.index') }}">All</a>
+                        <a class="nav-link" href="{{ route('products.index') }}">All Products</a>
                     </li>
 
                     <li class="nav-item">
@@ -203,23 +183,23 @@
                         </a>
                     </li>
                     
-                    @auth
                     <!-- Cart Icon -->
                     <li class="nav-item">
-                        <a href="{{ route('user.cart') }}" class="nav-link position-relative">
-                            <i class="bi bi-cart"></i>
+                        <a href="{{ auth()->check() ? route('user.cart') : route('cart.index') }}" class="nav-link position-relative" title="View Cart">
+                            <i class="bi bi-cart fs-5"></i>
                             @php
-                                $cartCount = auth()->user()->carts()->count();
+                                $cartCount = auth()->check() 
+                                    ? auth()->user()->carts()->count() 
+                                    : (\App\Models\Cart::where('session_id', session()->getId())->first()?->items()->sum('quantity') ?? 0);
                             @endphp
-                            
-                            @if($cartCount > 0)
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" 
-                                      style="font-size: 0.6rem; padding: 0.2rem 0.4rem;">
-                                    {{ $cartCount }}
-                                </span>
-                            @endif
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-count" 
+                                  style="font-size: 0.65rem; padding: 0.2rem 0.45rem; {{ $cartCount > 0 ? '' : 'display:none;' }}">
+                                {{ $cartCount }}
+                            </span>
                         </a>
                     </li>
+                    
+                    @auth
                     
                     <!-- User Dropdown -->
                     <li class="nav-item dropdown">
@@ -309,7 +289,7 @@
                     <ul class="list-unstyled">
                         <li><a href="{{ route('home') }}" class="text-light text-decoration-none">Home</a></li>
                         <li><a href="{{ route('about') }}" class="text-light text-decoration-none">About Us</a></li>
-                        <li><a href="{{ route('products.index') }}" class="text-light text-decoration-none">Shop All</a></li>
+                        <li><a href="{{ route('products.index') }}" class="text-light text-decoration-none">All Products</a></li>
                         <li><a href="{{ route('shop.caps') }}" class="text-light text-decoration-none">Caps Collection</a></li>
                         <li><a href="{{ route('products.aiRecommended') }}" class="text-light text-decoration-none">AI Picks</a></li>
                     </ul>
@@ -544,6 +524,8 @@
     
     <!-- Fast non-blocking jQuery for child views -->
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <!-- Amazon Product Card Interactive Script -->
+    <script src="{{ asset('js/amazon-product-card.js') }}"></script>
     @stack('scripts')
 </body>
 </html>

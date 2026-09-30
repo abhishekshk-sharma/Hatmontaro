@@ -3,7 +3,7 @@
 @section('title', 'Shop - Browse Our Collection')
 
 @section('content')
-<div class="container py-5">
+<div class="amazon-container py-4">
     <div class="row">
         <!-- Mobile Filter Toggle -->
         <div class="col-12 d-md-none mb-3">
@@ -120,68 +120,9 @@
             
             <!-- Products Grid -->
             @if($products->count() > 0)
-                <div class="row g-4">
+                <div class="amazon-products-grid">
                     @foreach($products as $product)
-                        <div class="col-md-6 col-lg-4">
-                            <a href="{{ route('products.show', $product) }}" class="text-decoration-none">
-                                <div class="card product-card h-100">
-                                    <div class="position-relative">
-                                        @php
-                                            $img = $product->image_url;
-                                            if (!\Illuminate\Support\Str::startsWith($img, ['http://','https://','/storage/'])) {
-                                                $img = asset($img);
-                                            }
-                                        @endphp
-                                        <img src="{{ $img }}" 
-                                             class="card-img-top" 
-                                             alt="{{ $product->name }}"
-                                             style="height: 250px; object-fit: cover;">
-                                        
-                                        @if($product->is_ai_recommended)
-                                            <span class="position-absolute top-0 end-0 m-2">
-                                                <span class="badge bg-primary">AI Recommended</span>
-                                            </span>
-                                        @endif
-                                        
-                                        @if($product->is_featured)
-                                            <span class="position-absolute top-0 start-0 m-2">
-                                                <span class="badge bg-success">Featured</span>
-                                            </span>
-                                        @endif
-                                    </div>
-                                    
-                                    <div class="card-body">
-                                        <h5 class="card-title text-dark">{{ $product->name }}</h5>
-                                        <p class="card-text text-muted small">
-                                            {{ Str::limit($product->description, 80) }}
-                                        </p>
-                                        
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <span class="h5 text-primary">₹{{ number_format($product->price, 2) }}</span>
-                                                @if($product->compare_price)
-                                                    <small class="text-muted text-decoration-line-through ms-1">
-                                                        ₹{{ number_format($product->compare_price, 2) }}
-                                                    </small>
-                                                @endif
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="mt-2">
-                                            @if($product->style_type)
-                                                <span class="badge bg-light text-dark">{{ $product->style_type }}</span>
-                                            @endif
-                                            @if($product->color)
-                                                <span class="badge bg-light text-dark">{{ $product->color }}</span>
-                                            @endif
-                                            @if($product->brand)
-                                                <span class="badge bg-light text-dark">{{ $product->brand }}</span>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
+                        <x-product-card :product="$product" />
                     @endforeach
                 </div>
                 

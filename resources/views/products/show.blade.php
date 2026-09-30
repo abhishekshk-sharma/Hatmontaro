@@ -3,7 +3,7 @@
 @section('title', $product->name . ' - Aura')
 
 @section('content')
-<div class="container py-5">
+<div class="amazon-container py-4">
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
@@ -188,6 +188,33 @@
                     </div>
                 @endif
 
+                <!-- Delivery Info Banner -->
+                <div class="card p-3 mb-4 border-0 bg-light rounded-3">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            @if($product->is_premium_delivery)
+                                <span class="hatmontaro-plus-badge fs-6">
+                                    <i class="bi bi-patch-check-fill"></i> hatmontaro <span class="plus-symbol">+</span>
+                                </span>
+                                <span class="badge bg-success bg-opacity-10 text-success fw-bold">FREE Delivery</span>
+                            @else
+                                <span class="standard-delivery-badge fs-6">
+                                    <i class="bi bi-truck"></i> Standard Delivery
+                                </span>
+                            @endif
+                        </div>
+                        <div>
+                            @if($product->delivery_time)
+                                <span class="text-muted small">Estimated delivery:</span> 
+                                <strong class="text-dark">{{ $product->delivery_time }}</strong>
+                            @else
+                                <span class="text-muted small">Estimated delivery:</span> 
+                                <strong class="text-dark">3-5 Business Days</strong>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Action Buttons -->
 <div class="d-grid gap-2 d-md-flex mb-5">
     @if($product->stock_quantity > 0)
@@ -233,29 +260,9 @@
     @if($similarProducts->count() > 0)
         <div class="mt-5 pt-5 border-top">
             <h3 class="mb-4">You Might Also Like</h3>
-            <div class="row g-4">
+            <div class="amazon-products-grid">
                 @foreach($similarProducts as $similar)
-                    <div class="col-md-3">
-                        <div class="card border-0 shadow-sm h-100">
-                            @php
-                                $simg = $similar->image_url;
-                                if (!\Illuminate\Support\Str::startsWith($simg, ['http://','https://','/storage/'])) {
-                                    $simg = asset($simg);
-                                }
-                            @endphp
-                            <img src="{{ $simg }}" 
-                                 class="card-img-top" 
-                                 alt="{{ $similar->name }}"
-                                 style="height: 200px; object-fit: cover;">
-                            <div class="card-body">
-                                <h6 class="card-title">{{ Str::limit($similar->name, 50) }}</h6>
-                                <p class="card-text text-primary fw-bold">₹{{ $similar->price }}</p>
-                                <a href="{{ route('products.show', $similar) }}" class="btn btn-sm btn-outline-primary">
-                                    View Details
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                    <x-product-card :product="$similar" />
                 @endforeach
             </div>
         </div>
