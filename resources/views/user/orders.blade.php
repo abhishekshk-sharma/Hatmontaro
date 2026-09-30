@@ -106,7 +106,7 @@
                                             <small class="text-muted">{{ $order->created_at->format('h:i A') }}</small>
                                         </td>
                                         <td>
-                                            {{ $order->items->count() }} item(s)
+                                            {{ $order->items ? $order->items->count() : ($order->orderItems ? $order->orderItems->count() : 0) }} item(s)
                                         </td>
                                         <td>
                                             <strong>₹{{ number_format($order->total_amount, 2) }}</strong>

@@ -17,7 +17,7 @@ class UserProfileController extends Controller
     public function allOrders(Request $request)
     {
         $user = auth()->user();
-        $query = $user->orders();
+        $query = $user->orders()->with('items');
         
         // Search functionality
         if ($request->filled('search')) {
