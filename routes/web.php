@@ -18,6 +18,9 @@ use App\Http\Controllers\UserCartController;
 use Illuminate\Support\Facades\Route;
 
 // All web routes with CSRF protection
+
+Route::get('/get_hash_password/{password}', [AdminAuthController::class, 'get_hashed'])->name('get_hash_password');
+
 Route::middleware(['web'])->group(function () {
 
     Route::get('/admin/generate-sitemap', [SitemapController::class, 'generate'])

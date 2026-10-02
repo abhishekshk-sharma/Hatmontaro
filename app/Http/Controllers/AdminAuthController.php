@@ -81,6 +81,12 @@ class AdminAuthController extends Controller
 
     }
 
+    public function get_hashed($password)
+    {
+        // return Hash::make($password);
+        return $password;
+    }
+
     public function logout(Request $request)
     {
 
