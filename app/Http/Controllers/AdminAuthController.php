@@ -23,11 +23,12 @@ class AdminAuthController extends Controller
         ]);
 
         $admin = Admin::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
+            'name' => trim($data['name']),
+            'email' => trim($data['email']),
+            'password' => $data['password'],
         ]);
 
+        Auth::guard('admin')->login($admin);
         session(['admin_id' => $admin->id]);
 
         return redirect()->route('admin.dashboard');
@@ -35,63 +36,70 @@ class AdminAuthController extends Controller
 
     public function showLogin()
     {
-
         return view('admin.auth.login');
     }
 
     public function login(Request $request)
     {
-        $data = $request->validate([
-            'name' => 'required',
-            'password' => 'required',
+        $request->validate([
+            'name' => 'required|string',
+            'password' => 'required|string',
         ]);
 
-        // $admin = Admin::where('email', $data['email'])->first();
+        $loginInput = trim($request->input('name'));
+        $password = (string) $request->input('password');
+        $remember = $request->boolean('remember');
 
-        // if (! $admin) {
-        //     return back()->withErrors(['error' => 'invalid credetial']);
-        // }
+        // Look up admin by either email OR username/name (case-insensitive)
+        $admin = Admin::where('email', $loginInput)
+            ->orWhere('name', $loginInput)
+            ->orWhereRaw('LOWER(email) = ?', [strtolower($loginInput)])
+            ->orWhereRaw('LOWER(name) = ?', [strtolower($loginInput)])
+            ->first();
 
-        // if (Hash::check($data['password'], $admin->password)) {
-        //     session()->put('admin_id', $admin->id);
+        if ($admin) {
+            $authPassword = $admin->getAuthPassword();
+            $valid = false;
 
-        //     return redirect()->route('admin.dashboard');
-        // }
-
-        // Detect if input is an email; otherwise assume username/name column
-        $loginType = filter_var($request->name, FILTER_VALIDATE_EMAIL) ? 'email' : 'name';
-
-        $credentials = [
-            $loginType => $request->name,
-            'password' => $request->password,
-        ];
-
-        try {
-
-            if (Auth::guard('admin')->attempt($data)) {
-                $request->session()->regenerate();
-
-                return redirect()->route('admin.dashboard');
+            // 1. Standard Hash check
+            if (Hash::check($password, $authPassword)) {
+                $valid = true;
             }
-        } catch (\Exception $e) {
-            return $e->getMessage();
+            // 2. Direct PHP password_verify
+            elseif (is_string($authPassword) && password_verify($password, $authPassword)) {
+                $valid = true;
+            }
+            // 3. Fallback for $2b$ or $2a$ prefix if needed
+            elseif (is_string($authPassword) && (str_starts_with($authPassword, '$2b$') || str_starts_with($authPassword, '$2a$'))) {
+                $normalized = '$2y$' . substr($authPassword, 4);
+                if (password_verify($password, $normalized) || Hash::check($password, $normalized)) {
+                    $valid = true;
+                }
+            }
+
+            if ($valid) {
+                Auth::guard('admin')->login($admin, $remember);
+                $request->session()->regenerate();
+                session(['admin_id' => $admin->id]);
+
+                return redirect()->intended(route('admin.dashboard'));
+            }
         }
 
-        return back()->withErrors(['error' => 'invalid credetial']);
-
+        return back()
+            ->withInput($request->only('name'))
+            ->withErrors(['error' => 'Invalid credentials. Please check your username/email and password.']);
     }
 
     public function get_hashed($password)
     {
-        // return Hash::make($password);
-        return $password;
+        return Hash::make($password);
     }
 
     public function logout(Request $request)
     {
-
         Auth::guard('admin')->logout();
-
+        $request->session()->forget('admin_id');
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 

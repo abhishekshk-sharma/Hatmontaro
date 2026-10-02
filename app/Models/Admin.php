@@ -21,19 +21,33 @@ class Admin extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'password' => 'hashed',
     ];
 
     public function setPasswordAttribute($password)
     {
-        if (empty($password)) return;
-        $this->attributes['password'] = Hash::needsRehash($password) ? Hash::make($password) : $password;
+        if (empty($password)) {
+            return;
+        }
+
+        // If it is already a valid bcrypt or argon hash, do not hash it again!
+        if (is_string($password) && (
+            str_starts_with($password, '$2y$') ||
+            str_starts_with($password, '$2a$') ||
+            str_starts_with($password, '$2b$') ||
+            str_starts_with($password, '$argon2i$') ||
+            str_starts_with($password, '$argon2id$')
+        )) {
+            $this->attributes['password'] = $password;
+            return;
+        }
+
+        $this->attributes['password'] = Hash::make($password);
     }
 
     public function getAuthPassword()
     {
         $password = $this->password;
-        if (is_string($password) && str_starts_with($password, '$2b$')) {
+        if (is_string($password) && (str_starts_with($password, '$2b$') || str_starts_with($password, '$2a$'))) {
             return '$2y$' . substr($password, 4);
         }
         return $password;

@@ -26,7 +26,7 @@
         <form method="POST" action="{{ route('admin.login') }}">
             @csrf
             <div class="mb-3">
-                <label class="form-label">UserName</label>
+                <label class="form-label">Username or Email</label>
                 <input name="name" type="text" value="{{ old('name') }}" class="form-control @error('name') is-invalid @enderror" required autofocus placeholder="Enter your username / email" />
                 @error('name')
                     <div class="invalid-feedback">{{ $message }}</div>
@@ -40,11 +40,16 @@
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
-            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">Login</button>
-            
-            <div class="mt-3 text-center">
-                <a href="{{ route('admin.password.request') }}" class="text-decoration-none">Forgot Your Password?</a>
+            <div class="mb-3 d-flex justify-content-between align-items-center">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
+                    <label class="form-check-label" for="remember">
+                        Remember Me
+                    </label>
+                </div>
+                <a href="{{ route('admin.password.request') }}" class="text-decoration-none small">Forgot Your Password?</a>
             </div>
+            <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">Login</button>
         </form>
     </div>
 </div>

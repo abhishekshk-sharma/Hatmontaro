@@ -10,15 +10,14 @@ class AdminAuth
 {
     public function handle(Request $request, Closure $next)
     {
-
-        \Log::info('AdminAuth middleware called', [
-            'path' => $request->path(),
-            'method' => $request->method(),
-            'has_admin_id' => session()->has('admin_id'),
-            'admin_id_value' => session()->get('admin_id'),
-        ]);
-
         if (! Auth::guard('admin')->check()) {
+            if (session()->has('admin_id')) {
+                $admin = \App\Models\Admin::find(session('admin_id'));
+                if ($admin) {
+                    Auth::guard('admin')->login($admin);
+                    return $next($request);
+                }
+            }
             return redirect()->route('admin.login');
         }
 

@@ -92,7 +92,7 @@ class AdminForgotPasswordController extends Controller
         // Update admin password
         $admin = Admin::where('email', $request->email)->first();
         $admin->update([
-            'password' => Hash::make($request->password),
+            'password' => $request->password,
         ]);
 
         // Delete the reset token
