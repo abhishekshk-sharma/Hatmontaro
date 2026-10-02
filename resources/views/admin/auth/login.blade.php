@@ -26,15 +26,15 @@
         <form method="POST" action="{{ route('admin.login') }}">
             @csrf
             <div class="mb-3">
-                <label class="form-label">Email</label>
-                <input name="name" type="text" value="{{ old('name') }}" class="form-control @error('email') is-invalid @enderror" required autofocus />
+                <label class="form-label">UserName</label>
+                <input name="name" type="text" value="{{ old('name') }}" class="form-control @error('name') is-invalid @enderror" required autofocus placeholder="Enter your username / email" />
                 @error('name')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
             <div class="mb-3 position-relative">
                 <label class="form-label">Password</label>
-                <input id="password" name="password" type="password" class="form-control pe-5 @error('password') is-invalid @enderror" required />
+                <input id="password" name="password" type="password" class="form-control pe-5 @error('password') is-invalid @enderror" required     />
                 <i class="bi bi-eye position-absolute" id="togglePassword" style="right: 15px; top: 38px; cursor: pointer;" onclick="togglePassword()"></i>
                 @error('password')
                     <div class="invalid-feedback">{{ $message }}</div>

@@ -58,12 +58,18 @@ class AdminAuthController extends Controller
         //     return redirect()->route('admin.dashboard');
         // }
 
+        // Detect if input is an email; otherwise assume username/name column
+        $loginType = filter_var($request->name, FILTER_VALIDATE_EMAIL) ? 'email' : 'name';
+
+        $credentials = [
+            $loginType => $request->name,
+            'password' => $request->password,
+        ];
+
         try {
 
             if (Auth::guard('admin')->attempt($data)) {
                 $request->session()->regenerate();
-
-                // return 'success1';
 
                 return redirect()->route('admin.dashboard');
             }
