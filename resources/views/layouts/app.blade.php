@@ -59,10 +59,9 @@
             border-color: #903aed;
         }
 
-        .btn-primary,
-        .btn-secondary{
-             margin-top: 4px;
-            margin-left: 10px;
+        .navbar-nav .nav-item .btn {
+            margin-top: 4px;
+            margin-left: 8px;
         }
         
         .btn-primary:hover {
@@ -141,6 +140,49 @@
                 box-shadow: 0 0 0 0 rgba(124, 58, 237, 0);
             }
         }
+
+        /* Modern Mobile Navbar Styles */
+        @media (max-width: 991.98px) {
+            .navbar {
+                padding-top: 10px;
+                padding-bottom: 10px;
+            }
+
+            .navbar .navbar-collapse {
+                background: #ffffff !important;
+                border-radius: 16px !important;
+                box-shadow: 0 14px 40px rgba(0, 0, 0, 0.15) !important;
+                padding: 16px 18px !important;
+                margin-top: 12px !important;
+                border: 1px solid rgba(124, 58, 237, 0.12) !important;
+                max-height: 82vh;
+                overflow-y: auto;
+            }
+
+            .navbar .navbar-nav .nav-link {
+                padding: 11px 14px !important;
+                border-radius: 10px;
+                font-size: 0.95rem;
+                font-weight: 500;
+                color: #374151;
+                transition: all 0.2s ease;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .navbar .navbar-nav .nav-link:hover,
+            .navbar .navbar-nav .nav-link.active {
+                background-color: #f5f3ff !important;
+                color: #7c3aed !important;
+            }
+
+            .navbar.menu-open {
+                background-color: rgba(255, 255, 255, 0.98) !important;
+                backdrop-filter: blur(12px) !important;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.08) !important;
+            }
+        }
     </style>
     
     @stack('styles')
@@ -149,49 +191,104 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top {{ (request()->routeIs('home') || request()->is('/')) ? 'transparent' : 'shadow-sm' }}" id="mainNavbar">
         <div class="container">
-            <a class="navbar-brand fw-bold fs-3" href="{{ route('home') }}" style="color: #7c3aed;">
+            <!-- Brand Logo -->
+            <a class="navbar-brand fw-bold fs-3 d-flex align-items-center" href="{{ route('home') }}" style="color: #7c3aed;">
                 Hatmontaro
             </a>
             
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+            <!-- Mobile Header Action Buttons (Always visible on mobile) -->
+            <div class="d-flex align-items-center d-lg-none gap-2">
+                <!-- Mobile Try-On Quick Pill -->
+                <a href="{{ route('caps.tryon') }}" class="btn btn-sm btn-outline-success rounded-pill px-2 py-1 d-flex align-items-center gap-1" style="font-size: 0.75rem; font-weight: 600;">
+                    <i class="bi bi-camera-video"></i>
+                    <span>Try-On</span>
+                </a>
+
+                @php
+                    $cartCount = auth()->check() 
+                        ? auth()->user()->carts()->count() 
+                        : (\App\Models\Cart::where('session_id', session()->getId())->first()?->items()->sum('quantity') ?? 0);
+                @endphp
+                <!-- Mobile Direct Cart Icon -->
+                <a href="{{ auth()->check() ? route('user.cart') : route('cart.index') }}" 
+                   class="btn btn-light rounded-circle position-relative p-2 d-flex align-items-center justify-content-center border" 
+                   style="width: 38px; height: 38px; color: #4b5563;" 
+                   title="View Cart"
+                   aria-label="View Cart">
+                    <i class="bi bi-cart2 fs-5"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-count" 
+                          style="font-size: 0.65rem; padding: 0.2rem 0.45rem; {{ $cartCount > 0 ? '' : 'display:none;' }}">
+                        {{ $cartCount }}
+                    </span>
+                </a>
+
+                <!-- Mobile Hamburger Toggler -->
+                <button class="navbar-toggler border-0 p-2 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+            </div>
             
+            <!-- Collapsible Navigation Menu -->
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+                @auth
+                <!-- Mobile User Profile Header Card (Mobile Only) -->
+                <div class="d-lg-none p-3 mb-3 rounded-3 mobile-user-header" style="background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="user-avatar bg-primary text-white rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 42px; height: 42px; font-weight: 700; font-size: 1.1rem;">
+                            {{ strtoupper(substr(auth()->user()->username ?? 'U', 0, 1)) }}
+                        </div>
+                        <div class="flex-grow-1 overflow-hidden">
+                            <div class="fw-bold text-dark text-truncate">{{ auth()->user()->username }}</div>
+                            <small class="text-muted text-truncate d-block">{{ auth()->user()->email }}</small>
+                        </div>
+                        <a href="{{ route('user.profile') }}" class="btn btn-sm btn-white bg-white shadow-sm rounded-pill text-primary fw-semibold" style="font-size: 0.78rem;">
+                            Profile
+                        </a>
+                    </div>
+                </div>
+                @endauth
+
+                <ul class="navbar-nav ms-auto align-items-lg-center">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('home') }}">Home</a>
+                        <a class="nav-link {{ request()->routeIs('home') ? 'active fw-bold text-primary' : '' }}" href="{{ route('home') }}">
+                            <i class="bi bi-house-door d-lg-none text-primary"></i>Home
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('about') }}">About</a>
+                        <a class="nav-link {{ request()->routeIs('about') ? 'active fw-bold text-primary' : '' }}" href="{{ route('about') }}">
+                            <i class="bi bi-info-circle d-lg-none text-primary"></i>About
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('products.index') }}">All Products</a>
+                        <a class="nav-link {{ request()->routeIs('products.index') ? 'active fw-bold text-primary' : '' }}" href="{{ route('products.index') }}">
+                            <i class="bi bi-grid d-lg-none text-primary"></i>All Products
+                        </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('shop.caps') }}">Caps</a>
+                        <a class="nav-link {{ request()->routeIs('shop.caps') ? 'active fw-bold text-primary' : '' }}" href="{{ route('shop.caps') }}">
+                            <i class="bi bi-tag d-lg-none text-primary"></i>Caps
+                        </a>
                     </li>
 
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('products.aiRecommended') }}">AI Picks</a>
-                    </li>
-                    
-                    <li class="nav-item">
-                        <a class="nav-link text-success fw-bold" href="{{ route('caps.tryon') }}">
-                            <i class="bi bi-camera-video"></i> Try Caps
+                        <a class="nav-link {{ request()->routeIs('products.aiRecommended') ? 'active fw-bold text-primary' : '' }}" href="{{ route('products.aiRecommended') }}">
+                            <i class="bi bi-stars d-lg-none text-primary"></i>AI Picks
                         </a>
                     </li>
                     
-                    <!-- Cart Icon -->
                     <li class="nav-item">
-                        <a href="{{ auth()->check() ? route('user.cart') : route('cart.index') }}" class="nav-link position-relative" title="View Cart">
+                        <a class="nav-link text-success fw-bold d-flex align-items-center gap-1" href="{{ route('caps.tryon') }}">
+                            <i class="bi bi-camera-video"></i>
+                            <span>Try Caps</span>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill ms-1 d-lg-none" style="font-size: 0.65rem;">NEW</span>
+                        </a>
+                    </li>
+                    
+                    <!-- Desktop Cart Icon (Hidden on mobile since it is in header bar) -->
+                    <li class="nav-item d-none d-lg-block ms-lg-2">
+                        <a href="{{ auth()->check() ? route('user.cart') : route('cart.index') }}" class="nav-link position-relative p-2" title="View Cart">
                             <i class="bi bi-cart fs-5"></i>
-                            @php
-                                $cartCount = auth()->check() 
-                                    ? auth()->user()->carts()->count() 
-                                    : (\App\Models\Cart::where('session_id', session()->getId())->first()?->items()->sum('quantity') ?? 0);
-                            @endphp
                             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger cart-count" 
                                   style="font-size: 0.65rem; padding: 0.2rem 0.45rem; {{ $cartCount > 0 ? '' : 'display:none;' }}">
                                 {{ $cartCount }}
@@ -200,32 +297,79 @@
                     </li>
                     
                     @auth
-                    
-                    <!-- User Dropdown -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-person-circle"></i> {{ auth()->user()->username }}
+                    <!-- Mobile Logged-in Quick Actions (Mobile Only) -->
+                    <li class="nav-item d-lg-none mt-2 pt-2 border-top">
+                        <div class="row g-2 mb-2">
+                            <div class="col-6">
+                                <a class="btn btn-light w-100 text-start py-2 px-3 rounded-3 d-flex align-items-center gap-2" href="{{ route('user.orders.all') }}" style="font-size: 0.85rem;">
+                                    <i class="bi bi-box-seam text-primary"></i> My Orders
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <a class="btn btn-light w-100 text-start py-2 px-3 rounded-3 d-flex align-items-center gap-2" href="{{ route('wishlist.index') }}" style="font-size: 0.85rem;">
+                                    <i class="bi bi-heart text-danger"></i> Wishlist
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <a class="btn btn-light w-100 text-start py-2 px-3 rounded-3 d-flex align-items-center gap-2" href="{{ route('user.cart') }}" style="font-size: 0.85rem;">
+                                    <i class="bi bi-cart text-primary"></i> My Cart
+                                </a>
+                            </div>
+                            <div class="col-6">
+                                <a class="btn btn-light w-100 text-start py-2 px-3 rounded-3 d-flex align-items-center gap-2" href="{{ route('user.profile') }}" style="font-size: 0.85rem;">
+                                    <i class="bi bi-gear text-secondary"></i> Settings
+                                </a>
+                            </div>
+                        </div>
+                        <form action="{{ route('logout') }}" method="POST">
+                            @csrf
+                            <button class="btn btn-outline-danger w-100 py-2 rounded-pill d-flex align-items-center justify-content-center gap-2 fw-semibold" type="submit" style="font-size: 0.85rem;">
+                                <i class="bi bi-box-arrow-right"></i> Logout
+                            </button>
+                        </form>
+                    </li>
+
+                    <!-- Desktop User Dropdown -->
+                    <li class="nav-item dropdown d-none d-lg-block ms-lg-3">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center gap-2" href="#" role="button" data-bs-toggle="dropdown">
+                            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 28px; height: 28px; font-size: 0.75rem; font-weight: 700;">
+                                {{ strtoupper(substr(auth()->user()->username ?? 'U', 0, 1)) }}
+                            </div>
+                            <span>{{ auth()->user()->username }}</span>
                         </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ route('user.profile') }}"><i class="bi bi-person"></i> My Profile</a></li>
-                            <li><a class="dropdown-item" href="{{ route('user.cart') }}"><i class="bi bi-cart"></i> My Cart</a></li>
-                            <li><a class="dropdown-item" href="{{ route('wishlist.index') }}"><i class="bi bi-heart"></i> My Wishlist</a></li>
-                            <li><a class="dropdown-item" href="{{ route('user.orders.all') }}"><i class="bi bi-box-seam-fill"></i> My Orders</a></li>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 mt-2">
+                            <li><a class="dropdown-item py-2" href="{{ route('user.profile') }}"><i class="bi bi-person me-2 text-muted"></i> My Profile</a></li>
+                            <li><a class="dropdown-item py-2" href="{{ route('user.cart') }}"><i class="bi bi-cart me-2 text-muted"></i> My Cart</a></li>
+                            <li><a class="dropdown-item py-2" href="{{ route('wishlist.index') }}"><i class="bi bi-heart me-2 text-muted"></i> My Wishlist</a></li>
+                            <li><a class="dropdown-item py-2" href="{{ route('user.orders.all') }}"><i class="bi bi-box-seam me-2 text-muted"></i> My Orders</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
                                 <form action="{{ route('logout') }}" method="POST">
                                     @csrf
-                                    <button class="dropdown-item" type="submit"><i class="bi bi-box-arrow-right"></i> Logout</button>
+                                    <button class="dropdown-item py-2 text-danger" type="submit"><i class="bi bi-box-arrow-right me-2"></i> Logout</button>
                                 </form>
                             </li>
                         </ul>
                     </li>
                     @else
-                    <li class="nav-item">
-                        <a class="btn btn-secondary btn-sm rounded-pill px-3" href="{{ route('login') }}" style="color:white;">Login</a>
+                    <!-- Guest Mobile Buttons -->
+                    <li class="nav-item d-lg-none mt-3 pt-3 border-top">
+                        <div class="d-flex gap-2">
+                            <a class="btn btn-outline-primary w-50 py-2 rounded-pill fw-semibold" href="{{ route('login') }}">
+                                <i class="bi bi-box-arrow-in-right me-1"></i> Login
+                            </a>
+                            <a class="btn btn-primary w-50 py-2 rounded-pill fw-semibold text-white" href="{{ route('register') }}">
+                                <i class="bi bi-person-plus me-1"></i> Register
+                            </a>
+                        </div>
                     </li>
-                    <li class="nav-item">
-                        <a class="btn btn-primary btn-sm rounded-pill px-3" href="{{ route('register') }}">Register</a>
+
+                    <!-- Guest Desktop Buttons -->
+                    <li class="nav-item d-none d-lg-block ms-lg-2">
+                        <a class="btn btn-outline-primary btn-sm rounded-pill px-3" href="{{ route('login') }}">Login</a>
+                    </li>
+                    <li class="nav-item d-none d-lg-block ms-lg-2">
+                        <a class="btn btn-primary btn-sm rounded-pill px-3 text-white" href="{{ route('register') }}">Register</a>
                     </li>
                     @endauth
                 </ul>
@@ -237,11 +381,24 @@
         document.addEventListener('DOMContentLoaded', function() {
             var lastScrollTop = 0;
             var navbar = document.getElementById('mainNavbar') || document.querySelector('.navbar');
+            var navCollapse = document.getElementById('navbarNav');
             if (!navbar) return;
 
             navbar.style.transition = 'opacity 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease';
 
+            if (navCollapse) {
+                navCollapse.addEventListener('show.bs.collapse', function () {
+                    navbar.classList.add('menu-open');
+                });
+                navCollapse.addEventListener('hidden.bs.collapse', function () {
+                    navbar.classList.remove('menu-open');
+                });
+            }
+
             window.addEventListener('scroll', function() {
+                var isMenuOpen = navCollapse && navCollapse.classList.contains('show');
+                if (isMenuOpen) return; // Do not hide navbar if user has mobile menu open!
+
                 var st = window.pageYOffset || document.documentElement.scrollTop;
                 if (st > lastScrollTop && st > 80) {
                     // User is scrolling down → hide navbar

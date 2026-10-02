@@ -16,15 +16,15 @@ class AdminProductController extends Controller
         $sourceDir = public_path('storage/products');
         $targetDir = public_path('images/products');
         if (is_dir($sourceDir)) {
-            if (!is_dir($targetDir)) {
+            if (! is_dir($targetDir)) {
                 @mkdir($targetDir, 0755, true);
             }
-            $files = @glob($sourceDir . '/*');
+            $files = @glob($sourceDir.'/*');
             if ($files) {
                 foreach ($files as $file) {
                     if (is_file($file)) {
-                        $dest = $targetDir . '/' . basename($file);
-                        if (!file_exists($dest)) {
+                        $dest = $targetDir.'/'.basename($file);
+                        if (! file_exists($dest)) {
                             @copy($file, $dest);
                         }
                     }
@@ -36,12 +36,12 @@ class AdminProductController extends Controller
         foreach (['images/men', 'images/Uncategorized'] as $stray) {
             $strayPath = public_path($stray);
             if (is_dir($strayPath)) {
-                $strayFiles = @glob($strayPath . '/*');
+                $strayFiles = @glob($strayPath.'/*');
                 if ($strayFiles) {
                     foreach ($strayFiles as $sf) {
                         if (is_file($sf)) {
-                            $dest = $targetDir . '/' . basename($sf);
-                            if (!file_exists($dest)) {
+                            $dest = $targetDir.'/'.basename($sf);
+                            if (! file_exists($dest)) {
                                 @copy($sf, $dest);
                             }
                         }
@@ -64,12 +64,12 @@ class AdminProductController extends Controller
                 ->chunk(50, function ($prods) {
                     foreach ($prods as $prod) {
                         $prod->timestamps = false;
-                        $prod->image_url = '/images/products/' . basename($prod->getRawOriginal('image_url'));
+                        $prod->image_url = '/images/products/'.basename($prod->getRawOriginal('image_url'));
                         $prod->save();
                     }
                 });
         } catch (\Exception $e) {
-            \Log::warning('Product image_url DB migration notice: ' . $e->getMessage());
+            \Log::warning('Product image_url DB migration notice: '.$e->getMessage());
         }
 
         $products = Product::with('category')->paginate(20);
@@ -138,7 +138,7 @@ class AdminProductController extends Controller
                 }
 
                 $extension = strtolower($file->getClientOriginalExtension());
-                $filename = time() . '_' . preg_replace('/[^a-zA-Z0-9_\.-]/', '_', $file->getClientOriginalName());
+                $filename = time().'_'.preg_replace('/[^a-zA-Z0-9_\.-]/', '_', $file->getClientOriginalName());
 
                 // SVG or caps category go to images/caps, all regular products go to images/products
                 $isCap = ($category && $category->slug === 'caps') || $extension === 'svg';
@@ -156,11 +156,11 @@ class AdminProductController extends Controller
                     return back()->withInput()->withErrors(['image' => 'The image failed to upload.']);
                 }
 
-                $data['image_url'] = '/' . $folder . '/' . $filename;
+                $data['image_url'] = '/'.$folder.'/'.$filename;
             } catch (\Exception $e) {
                 \Log::error('Exception while storing product image', ['message' => $e->getMessage()]);
 
-                return back()->withInput()->withErrors(['image' => 'The image failed to upload: ' . $e->getMessage()]);
+                return back()->withInput()->withErrors(['image' => 'The image failed to upload: '.$e->getMessage()]);
             }
         } else {
             $data['image_url'] = $data['image_url'] ?? '/images/products/placeholder.png';
@@ -183,7 +183,7 @@ class AdminProductController extends Controller
         } catch (\Exception $e) {
             \Log::error('Failed to create product', ['error' => $e->getMessage()]);
 
-            return back()->withInput()->withErrors(['error' => 'Failed to create product: ' . $e->getMessage()]);
+            return back()->withInput()->withErrors(['error' => 'Failed to create product: '.$e->getMessage()]);
         }
     }
 
@@ -270,7 +270,7 @@ class AdminProductController extends Controller
                 }
 
                 $extension = strtolower($file->getClientOriginalExtension());
-                $filename = time() . '_' . preg_replace('/[^a-zA-Z0-9_\.-]/', '_', $file->getClientOriginalName());
+                $filename = time().'_'.preg_replace('/[^a-zA-Z0-9_\.-]/', '_', $file->getClientOriginalName());
 
                 // SVG or caps category go to images/caps, regular products to images/products
                 $isCap = ($category && $category->slug === 'caps') || $extension === 'svg';
@@ -288,12 +288,12 @@ class AdminProductController extends Controller
                     return back()->withInput()->withErrors(['image' => 'The image failed to upload.']);
                 }
 
-                $data['image_url'] = '/' . $folder . '/' . $filename;
+                $data['image_url'] = '/'.$folder.'/'.$filename;
                 \Log::info('Image stored successfully in update', ['path' => $data['image_url']]);
             } catch (\Exception $e) {
                 \Log::error('Exception while storing product image (update)', ['message' => $e->getMessage()]);
 
-                return back()->withInput()->withErrors(['image' => 'The image failed to upload: ' . $e->getMessage()]);
+                return back()->withInput()->withErrors(['image' => 'The image failed to upload: '.$e->getMessage()]);
             }
         } else {
             \Log::info('No image file in update request');
@@ -328,7 +328,7 @@ class AdminProductController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return back()->withInput()->withErrors(['error' => 'Failed to update product: ' . $e->getMessage()]);
+            return back()->withInput()->withErrors(['error' => 'Failed to update product: '.$e->getMessage()]);
         }
     }
 

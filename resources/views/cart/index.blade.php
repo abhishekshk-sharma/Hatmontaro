@@ -1,161 +1,351 @@
 @extends('layouts.app')
 
-@section('title', 'Shopping Cart')
+@section('title', 'Shopping Cart - Hatmontaro')
 
 @section('content')
-<div class="container py-5">
-    <h1 class="h2 mb-4">Shopping Cart</h1>
-    
+<div class="amazon-container py-3 py-md-4 cart-page-container">
     @php
-        // Get cart
         if (auth()->check()) {
             $cart = \App\Models\Cart::where('user_id', auth()->id())->first();
         } else {
             $sessionId = session()->getId();
             $cart = \App\Models\Cart::where('session_id', $sessionId)->first();
         }
+        $itemCount = ($cart && $cart->items) ? $cart->items->sum('quantity') : 0;
+        $subtotal = ($cart && $cart->items) ? $cart->items->sum(function($item) {
+            return ($item->product->price ?? $item->price) * $item->quantity;
+        }) : 0;
     @endphp
-    
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-2">
+        <ol class="breadcrumb mb-1">
+            <li class="breadcrumb-item"><a href="{{ url('/') }}" class="text-decoration-none text-muted small"><i class="bi bi-house-door me-1"></i>Home</a></li>
+            <li class="breadcrumb-item active small text-dark fw-semibold" aria-current="page">Shopping Cart</li>
+        </ol>
+    </nav>
+
+    <!-- Page Header -->
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <h1 class="h4 fw-bolder mb-0 text-dark">Shopping Cart</h1>
+            <p class="text-muted small mb-0 d-none d-sm-block">Review your selected items and proceed to secure checkout</p>
+        </div>
+        @if($itemCount > 0)
+            <span class="badge bg-light text-dark border px-3 py-2 rounded-pill fw-semibold" style="font-size: 0.8rem;">
+                {{ $itemCount }} {{ Str::plural('item', $itemCount) }}
+            </span>
+        @endif
+    </div>
+
     @if($cart && $cart->items->count() > 0)
-        <div class="row">
-            <!-- Cart Items -->
+        <!-- Mobile Top Subtotal & Fast Checkout Banner (Amazon-style, mobile only) -->
+        <div class="cart-top-subtotal-card mb-3 d-lg-none">
+            <div class="d-flex justify-content-between align-items-baseline mb-1">
+                <span class="text-secondary small fw-medium">Subtotal ({{ $itemCount }} {{ Str::plural('item', $itemCount) }}):</span>
+                <span class="fs-4 fw-bolder text-dark">₹{{ number_format($subtotal, 2) }}</span>
+            </div>
+            <div class="d-flex align-items-center gap-1 text-success small mb-2">
+                <i class="bi bi-patch-check-fill text-success fs-6"></i>
+                <span>Your order qualifies for <strong class="text-dark">FREE Delivery</strong></span>
+            </div>
+            <div class="form-check small text-muted mb-3">
+                <input class="form-check-input" type="checkbox" id="giftCheckMobile" checked>
+                <label class="form-check-label" for="giftCheckMobile">
+                    This order contains a gift
+                </label>
+            </div>
+            <a href="{{ route('checkout') }}" class="btn btn-primary w-100 cart-checkout-btn-mobile d-flex align-items-center justify-content-center gap-2">
+                <span>Proceed to Checkout</span>
+                <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="row g-4">
+            <!-- Cart Items List Column -->
             <div class="col-lg-8">
-                <div class="card">
-                    <div class="card-body">
-                        @foreach($cart->items as $item)
-                            <div class="row align-items-center mb-4 pb-4 border-bottom">
-                                <div class="col-md-2">
-                                    <img src="{{ $item->product->image_url ?? 'https://via.placeholder.com/100' }}" 
-                                         class="img-fluid rounded" 
-                                         alt="{{ $item->product->name ?? 'Product' }}"
-                                         style="height: 80px; object-fit: cover;">
-                                </div>
-                                
-                                <div class="col-md-5">
-                                    <h5 class="mb-1">{{ $item->product->name ?? 'Product' }}</h5>
-                                    <p class="text-muted small mb-2">
-                                        {{ $item->product->category->name ?? '' }}
-                                    </p>
-                                    
-                                    @if($item->options)
-                                        <div class="small">
+                <div class="d-flex flex-column gap-3">
+                    @foreach($cart->items as $item)
+                        @php
+                            $prod = $item->product;
+                            $prodImg = $prod ? $prod->image_url : null;
+                            if ($prodImg && !\Illuminate\Support\Str::startsWith($prodImg, ['http://','https://','/'])) {
+                                $prodImg = asset($prodImg);
+                            }
+                            $itemPrice = $prod ? $prod->price : $item->price;
+                            $lineTotal = $itemPrice * $item->quantity;
+                            $prodUrl = $prod ? route('products.show', $prod->slug ?: $prod->id) : '#';
+                        @endphp
+                        
+                        <div class="cart-item-card position-relative" id="cart-item-row-{{ $item->id }}">
+                            <div class="d-flex gap-3 align-items-start">
+                                <!-- Product Thumbnail (Fixed aspect ratio, contained image) -->
+                                <a href="{{ $prodUrl }}" class="cart-item-thumb text-decoration-none">
+                                    <img src="{{ $prodImg ?: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=300&q=80' }}" 
+                                         alt="{{ $prod->name ?? 'Product' }}"
+                                         loading="lazy">
+                                </a>
+
+                                <!-- Product Details (Amazon-style vertical hierarchy) -->
+                                <div class="flex-grow-1 min-w-0">
+                                    <!-- Title (2-line clamp) -->
+                                    <div class="mb-1">
+                                        <a href="{{ $prodUrl }}" class="cart-item-title" title="{{ $prod->name ?? 'Product' }}">
+                                            {{ $prod->name ?? 'Product' }}
+                                        </a>
+                                    </div>
+
+                                    <!-- Price Row -->
+                                    <div class="d-flex align-items-baseline flex-wrap gap-2 mb-1">
+                                        <span class="cart-item-price">₹{{ number_format($lineTotal, 2) }}</span>
+                                        @if($prod && $prod->original_price && $prod->original_price > $itemPrice)
+                                            <span class="text-muted text-decoration-line-through small" style="font-size: 0.8rem;">
+                                                ₹{{ number_format($prod->original_price * $item->quantity, 2) }}
+                                            </span>
+                                        @endif
+                                        @if($item->quantity > 1)
+                                            <span class="text-muted small" style="font-size: 0.75rem;">
+                                                (₹{{ number_format($itemPrice, 2) }} each)
+                                            </span>
+                                        @endif
+                                    </div>
+
+                                    <!-- Stock & Delivery Badge -->
+                                    <div class="d-flex align-items-center flex-wrap gap-2 small mb-2" style="font-size: 0.76rem;">
+                                        <span class="text-success fw-semibold d-inline-flex align-items-center gap-1">
+                                            <i class="bi bi-check-circle-fill"></i> In Stock
+                                        </span>
+                                        <span class="text-muted">•</span>
+                                        <span class="text-muted">Eligible for <strong class="text-dark">FREE Delivery</strong></span>
+                                        @if($prod && $prod->category)
+                                            <span class="badge bg-light text-secondary border px-2 py-0.5 rounded-pill" style="font-size: 0.68rem;">
+                                                {{ $prod->category->name }}
+                                            </span>
+                                        @endif
+                                    </div>
+
+                                    <!-- Selected Options (e.g. Size, Color) -->
+                                    @if($item->options && count($item->options) > 0)
+                                        <div class="d-flex flex-wrap gap-1 mb-2">
                                             @foreach($item->options as $key => $value)
-                                                <span class="badge bg-light text-dark me-1">
-                                                    {{ $key }}: {{ $value }}
+                                                <span class="badge bg-light text-dark border px-2 py-1 rounded" style="font-size: 0.7rem; font-weight: 500;">
+                                                    {{ ucfirst($key) }}: <strong class="text-primary">{{ $value }}</strong>
                                                 </span>
                                             @endforeach
                                         </div>
                                     @endif
-                                </div>
-                                
-                                <div class="col-md-2">
-                                    <div class="input-group input-group-sm">
-                                        <button class="btn btn-outline-secondary" 
-                                                onclick="updateQuantity({{ $item->id }}, -1)">
-                                            <i class="bi bi-dash"></i>
-                                        </button>
-                                        <input type="text" 
-                                               class="form-control text-center" 
-                                               value="{{ $item->quantity }}"
-                                               id="quantity-{{ $item->id }}"
-                                               readonly>
-                                        <button class="btn btn-outline-secondary" 
-                                                onclick="updateQuantity({{ $item->id }}, 1)">
-                                            <i class="bi bi-plus"></i>
-                                        </button>
+
+                                    <!-- Bottom Action Controls: Pill Stepper & Actions -->
+                                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 pt-2 border-top">
+                                        <!-- Amazon-style Pill Stepper -->
+                                        <div class="cart-stepper" id="stepper-{{ $item->id }}">
+                                            <button type="button" class="cart-stepper-btn" onclick="updateQuantity({{ $item->id }}, -1)" title="Decrease" aria-label="Decrease quantity">
+                                                @if($item->quantity == 1)
+                                                    <i class="bi bi-trash3 text-danger"></i>
+                                                @else
+                                                    <i class="bi bi-dash-lg"></i>
+                                                @endif
+                                            </button>
+                                            <span class="cart-stepper-value" id="quantity-{{ $item->id }}">{{ $item->quantity }}</span>
+                                            <button type="button" class="cart-stepper-btn" onclick="updateQuantity({{ $item->id }}, 1)" title="Increase" aria-label="Increase quantity">
+                                                <i class="bi bi-plus-lg"></i>
+                                            </button>
+                                        </div>
+
+                                        <!-- Quick Actions -->
+                                        <div class="d-flex align-items-center gap-1.5">
+                                            <form action="{{ route('cart.remove', $item) }}" method="POST" id="remove-form-{{ $item->id }}" class="d-inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="cart-action-pill danger-pill" onclick="return confirm('Remove this item from your cart?')" title="Delete item">
+                                                    <i class="bi bi-trash3 text-danger"></i>
+                                                    <span>Delete</span>
+                                                </button>
+                                            </form>
+
+                                            @if($prod)
+                                                @auth
+                                                    <form action="{{ route('wishlist.add', $prod->id) }}" method="POST" class="d-inline">
+                                                        @csrf
+                                                        <button type="submit" class="cart-action-pill" title="Save for Later">
+                                                            <i class="bi bi-heart text-secondary"></i>
+                                                            <span class="d-none d-sm-inline">Save for Later</span>
+                                                        </button>
+                                                    </form>
+                                                @else
+                                                    <button type="button" class="cart-action-pill" onclick="alert('Please log in to save items to your wishlist.')" title="Save for Later">
+                                                        <i class="bi bi-heart text-secondary"></i>
+                                                        <span class="d-none d-sm-inline">Save</span>
+                                                    </button>
+                                                @endauth
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
-                                
-                                <div class="col-md-2 text-end">
-                                    <h6 class="mb-0">₹{{ number_format($item->price * $item->quantity, 2) }}</h6>
-                                    <small class="text-muted">₹{{ $item->price }} each</small>
-                                </div>
-                                
-                                <div class="col-md-1 text-end">
-                                    <form action="{{ route('cart.remove', $item) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-link text-danger" onclick="return confirm('Remove this item?')">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                </div>
                             </div>
-                        @endforeach
-                    </div>
+                        </div>
+                    @endforeach
                 </div>
-                
-                <!-- Continue Shopping -->
-                <div class="mt-3">
-                    <a href="{{ route('products.index') }}" class="btn btn-outline-primary">
-                        <i class="bi bi-arrow-left me-2"></i>Continue Shopping
+
+                <!-- Continue Shopping & Clear Cart Buttons -->
+                <div class="d-flex justify-content-between align-items-center mt-3 mb-4 flex-wrap gap-2">
+                    <a href="{{ route('products.index') }}" class="btn btn-outline-secondary rounded-pill px-3 py-2 btn-sm fw-medium">
+                        <i class="bi bi-arrow-left me-1"></i> Continue Shopping
                     </a>
-                    
-                    <form action="{{ route('cart.clear') }}" method="POST" class="d-inline float-end">
+
+                    <form action="{{ route('cart.clear') }}" method="POST" class="d-inline">
                         @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Clear entire cart?')">
-                            Clear Cart
+                        <button type="submit" class="btn btn-outline-danger rounded-pill px-3 py-2 btn-sm fw-medium" onclick="return confirm('Are you sure you want to clear your entire cart?')">
+                            <i class="bi bi-trash3 me-1"></i> Clear Cart
                         </button>
                     </form>
                 </div>
             </div>
-            
-            <!-- Order Summary -->
+
+            <!-- Order Summary Column -->
             <div class="col-lg-4">
-                <div class="card sticky-top" style="top: 100px;">
-                    <div class="card-header">
-                        <h5 class="mb-0">Order Summary</h5>
+                <div class="card border-0 shadow-sm rounded-4 bg-white sticky-top mb-4" style="top: 90px;">
+                    <div class="card-header bg-white border-bottom py-3 px-4">
+                        <h2 class="h5 mb-0 fw-bolder text-dark">Order Summary</h2>
                     </div>
-                    <div class="card-body">
-                        @php
-                            $subtotal = $cart->items->sum(function($item) {
-                                return $item->price * $item->quantity;
-                            });
-                        @endphp
-                        
+                    <div class="card-body p-4">
                         <div class="d-flex justify-content-between mb-2">
-                            <span>Subtotal</span>
-                            <span>₹{{ number_format($subtotal, 2) }}</span>
+                            <span class="text-secondary">Items Subtotal ({{ $itemCount }}):</span>
+                            <span class="fw-semibold text-dark">₹{{ number_format($subtotal, 2) }}</span>
                         </div>
                         <div class="d-flex justify-content-between mb-2">
-                            <span>Shipping</span>
-                            <span>Free</span>
+                            <span class="text-secondary">Shipping & Handling:</span>
+                            <span class="text-success fw-bold">FREE</span>
                         </div>
                         <div class="d-flex justify-content-between mb-2">
-                            <span>Tax</span>
-                            <span>Calculated at checkout</span>
+                            <span class="text-secondary">Estimated Tax:</span>
+                            <span class="text-muted">₹0.00</span>
                         </div>
-                        <hr>
-                        <div class="d-flex justify-content-between mb-4">
-                            <strong>Total</strong>
-                            <strong>₹{{ number_format($subtotal, 2) }}</strong>
+                        <hr class="my-3">
+                        <div class="d-flex justify-content-between align-items-baseline mb-4">
+                            <span class="fs-5 fw-bold text-dark">Order Total:</span>
+                            <span class="fs-4 fw-bolder text-dark">₹{{ number_format($subtotal, 2) }}</span>
                         </div>
-                        
-                        <a href="{{ route('checkout') }}" class="btn btn-primary btn-lg w-100 mb-3">
-                            Proceed to Checkout
+
+                        <a href="{{ route('checkout') }}" class="btn btn-primary btn-lg w-100 rounded-pill py-3 fw-bold shadow-sm mb-3 d-flex align-items-center justify-content-center gap-2">
+                            <span>Proceed to Checkout</span>
+                            <i class="bi bi-arrow-right"></i>
                         </a>
-                        
-                        <!-- Ask Aura About Cart -->
-                        <button class="btn btn-outline-dark w-100" data-bs-toggle="ai-modal">
-                            <i class="bi bi-robot me-2"></i>Ask Aura about these items
-                        </button>
+
+                        <!-- Safe & Secure Badges -->
+                        <div class="p-3 bg-light rounded-3 text-center mb-3 border">
+                            <i class="bi bi-shield-lock-fill text-success fs-3 mb-1 d-block"></i>
+                            <div class="fw-semibold small text-dark">Safe & Secure Payment</div>
+                            <div class="text-muted" style="font-size: 0.72rem;">Encrypted 256-bit checkout with Razorpay</div>
+                        </div>
+
+                        <!-- Highlights Banner -->
+                        <div class="row g-2 text-center text-muted" style="font-size: 0.72rem;">
+                            <div class="col-4">
+                                <div class="p-2 border rounded-3 bg-white">
+                                    <i class="bi bi-truck text-primary d-block fs-6 mb-1"></i>
+                                    <span>Fast Delivery</span>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-2 border rounded-3 bg-white">
+                                    <i class="bi bi-arrow-repeat text-success d-block fs-6 mb-1"></i>
+                                    <span>7 Days Return</span>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-2 border rounded-3 bg-white">
+                                    <i class="bi bi-patch-check text-info d-block fs-6 mb-1"></i>
+                                    <span>100% Genuine</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     @else
-        <!-- Empty Cart -->
-        <div class="text-center py-5">
-            <div class="display-1 text-muted mb-4">
-                <i class="bi bi-cart-x"></i>
+        <!-- Empty Cart State -->
+        <div class="card border-0 shadow-sm rounded-4 bg-white text-center py-5 px-3 my-4">
+            <div class="mb-3">
+                <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-light p-4" style="width: 100px; height: 100px;">
+                    <i class="bi bi-cart-x text-primary fs-1"></i>
+                </div>
             </div>
-            <h3>Your cart is empty</h3>
-            <p class="text-muted mb-4">Add some products to get started!</p>
-            <a href="{{ route('products.index') }}" class="btn btn-primary btn-lg">
-                Start Shopping
-            </a>
+            <h2 class="h4 fw-bold mb-2 text-dark">Your Hatmontaro Cart is empty</h2>
+            <p class="text-muted mb-4 mx-auto" style="max-width: 420px; font-size: 0.92rem;">
+                Explore our curated collections of premium caps, streetwear, and AI-recommended fashion to get started.
+            </p>
+            <div class="d-flex justify-content-center flex-wrap gap-2">
+                <a href="{{ route('products.index') }}" class="btn btn-primary rounded-pill px-4 py-2.5 fw-semibold shadow-sm">
+                    <i class="bi bi-grid me-1"></i> Explore Collections
+                </a>
+                <a href="{{ route('shop.caps') }}" class="btn btn-outline-success rounded-pill px-4 py-2.5 fw-semibold">
+                    <i class="bi bi-camera-video me-1"></i> Virtual Cap Try-On
+                </a>
+            </div>
         </div>
     @endif
 </div>
+
+@push('scripts')
+<script>
+function updateQuantity(itemId, delta) {
+    const qtySpan = document.getElementById('quantity-' + itemId);
+    const stepperWrap = document.getElementById('stepper-' + itemId);
+    if (!qtySpan) return;
+    
+    let currentQty = parseInt(qtySpan.innerText) || 1;
+    let newQty = currentQty + delta;
+
+    if (newQty < 1) {
+        if (confirm('Remove this item from your cart?')) {
+            const removeForm = document.getElementById('remove-form-' + itemId);
+            if (removeForm) {
+                removeForm.submit();
+            }
+        }
+        return;
+    }
+
+    // Visual feedback
+    if (stepperWrap) {
+        stepperWrap.style.opacity = '0.6';
+        stepperWrap.style.pointerEvents = 'none';
+    }
+    qtySpan.innerText = newQty;
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+    fetch(`/cart/${itemId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ quantity: newQty })
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Network error');
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        } else {
+            if (stepperWrap) {
+                stepperWrap.style.opacity = '1';
+                stepperWrap.style.pointerEvents = 'auto';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Failed to update quantity:', error);
+        window.location.reload();
+    });
+}
+</script>
+@endpush
 @endsection
