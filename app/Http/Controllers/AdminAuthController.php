@@ -71,7 +71,7 @@ class AdminAuthController extends Controller
             }
             // 3. Fallback for $2b$ or $2a$ prefix if needed
             elseif (is_string($authPassword) && (str_starts_with($authPassword, '$2b$') || str_starts_with($authPassword, '$2a$'))) {
-                $normalized = '$2y$' . substr($authPassword, 4);
+                $normalized = '$2y$'.substr($authPassword, 4);
                 if (password_verify($password, $normalized) || Hash::check($password, $normalized)) {
                     $valid = true;
                 }
