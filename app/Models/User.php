@@ -19,6 +19,11 @@ class User extends Authenticatable
         'joining_date' => 'datetime',
     ];
 
+    public function getNameAttribute()
+    {
+        return $this->username;
+    }
+
     public function carts()
     {
         return $this->hasMany(UserCart::class);

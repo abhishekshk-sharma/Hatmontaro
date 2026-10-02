@@ -10,6 +10,26 @@ class UserCartController extends Controller
 {
     public function index()
     {
+        $userId = auth()->id();
+        
+        // Sync items from session Cart if UserCart is currently empty
+        if (auth()->user()->carts()->count() === 0) {
+            $cart = \App\Models\Cart::where('user_id', $userId)
+                ->orWhere('session_id', session()->getId())
+                ->first();
+                
+            if ($cart && $cart->items->count() > 0) {
+                foreach ($cart->items as $item) {
+                    UserCart::firstOrCreate([
+                        'user_id' => $userId,
+                        'product_id' => $item->product_id
+                    ], [
+                        'quantity' => $item->quantity
+                    ]);
+                }
+            }
+        }
+
         $cartItems = auth()->user()->carts()->with('product')->get();
         return view('user.cart', compact('cartItems'));
     }

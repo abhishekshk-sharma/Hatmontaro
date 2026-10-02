@@ -30,6 +30,22 @@
         @endif
     </div>
 
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show rounded-3 mb-3 d-flex align-items-center gap-2" role="alert">
+            <i class="bi bi-exclamation-triangle-fill fs-5 text-danger"></i>
+            <div>{{ session('error') }}</div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show rounded-3 mb-3 d-flex align-items-center gap-2" role="alert">
+            <i class="bi bi-check-circle-fill fs-5 text-success"></i>
+            <div>{{ session('success') }}</div>
+            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     @if($cartItems->count() > 0)
         <!-- Mobile Top Subtotal & Fast Checkout Banner (Amazon-style, mobile only) -->
         <div class="cart-top-subtotal-card mb-3 d-lg-none">

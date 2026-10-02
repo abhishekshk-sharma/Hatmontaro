@@ -9,17 +9,13 @@ class Order extends Model
     protected $fillable = [
         'user_id', 'order_number', 'total_amount', 'status', 
         'shipping_address', 'phone_no', 'payment_method', 'payment_status',
-        'order_date', 'ip_address', 'user_agent', 'razorpay_order_id',
-        'payment_captured_at', 'viewed_at'
-    ];
-
-    protected $guarded = [
         'payment_id', 'payment_signature', 'transaction_id'
     ];
+
+    protected $guarded = [];
     
     protected $hidden = [
-        'payment_id', 'payment_signature', 'transaction_id', 
-        'ip_address', 'user_agent'
+        'payment_signature', 'transaction_id'
     ];
     
     protected $casts = [

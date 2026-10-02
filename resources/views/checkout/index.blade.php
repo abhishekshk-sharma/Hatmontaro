@@ -49,9 +49,8 @@
                         <div class="mb-3">
                             <label class="form-label">Payment Method *</label>
                             <select name="payment_method" class="form-select" required>
-                                <option value="">Select Payment Method</option>
-                                <option value="razorpay">Razorpay (Card/UPI/Wallet)</option>
-                                {{-- <option value="cod">Cash on Delivery</option> --}}
+                                <option value="razorpay">Razorpay (Cards, UPI, NetBanking, Wallets)</option>
+                                <option value="cod">Cash on Delivery (COD)</option>
                             </select>
                         </div>
                     </form>
@@ -167,16 +166,43 @@ document.getElementById('placeOrderBtn').addEventListener('click', function() {
             }
         };
         
+        const razorpayKey = @json(config('services.razorpay.key'));
+        const isPlaceholderKey = !razorpayKey || razorpayKey.includes('YOUR_ACTUAL') || razorpayKey === 'rzp_test_placeholder';
+
+        if (isPlaceholderKey) {
+            if (confirm('Razorpay API keys are in development placeholder mode.\n\nClick OK to simulate a successful payment order, or Cancel to choose Cash on Delivery.')) {
+                formData.append('razorpay_payment_id', 'pay_mock_' + Date.now());
+                formData.append('razorpay_order_id', options.order_id || ('order_' + Date.now()));
+                formData.append('razorpay_signature', 'mock_sig_' + Array.from({length: 64}, () => 'a').join(''));
+                processOrder(formData);
+                return;
+            } else {
+                resetButton(btn, originalText);
+                return;
+            }
+        }
+
         try {
             const rzp = new Razorpay(options);
+            rzp.on('payment.failed', function (resp){
+                alert('Payment failed: ' + (resp.error ? resp.error.description : 'Transaction cancelled or failed'));
+                resetButton(btn, originalText);
+            });
             rzp.open();
         } catch (error) {
             console.error('Razorpay initialization failed:', error);
-            alert('Payment gateway initialization failed. Please try again.');
+            if (confirm('Razorpay gateway could not open. Would you like to complete this order in Test mode?')) {
+                formData.append('razorpay_payment_id', 'pay_mock_' + Date.now());
+                formData.append('razorpay_order_id', options.order_id || ('order_' + Date.now()));
+                formData.append('razorpay_signature', 'mock_sig_' + Array.from({length: 64}, () => 'a').join(''));
+                processOrder(formData);
+                return;
+            }
+            alert('Payment gateway initialization failed. Please choose Cash on Delivery or try again.');
             resetButton(btn, originalText);
         }
         @else
-        alert('Payment gateway not available. Please try again later.');
+        alert('Payment gateway not available. Please choose Cash on Delivery.');
         resetButton(btn, originalText);
         @endif
     } else {

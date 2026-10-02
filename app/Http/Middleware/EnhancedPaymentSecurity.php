@@ -65,8 +65,14 @@ class EnhancedPaymentSecurity
             $response->header('X-Content-Type-Options', 'nosniff');
             $response->header('X-Frame-Options', 'DENY');
             $response->header('X-XSS-Protection', '1; mode=block');
-            $response->header('Referrer-Policy', 'strict-origin-when-cross-origin');
-            $response->header('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' checkout.razorpay.com; style-src 'self' 'unsafe-inline';");
+            $csp = "default-src 'self' https: data: blob:; "
+                 . "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com https://cdn.jsdelivr.net; "
+                 . "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; "
+                 . "font-src 'self' data: https://cdn.jsdelivr.net https://fonts.gstatic.com; "
+                 . "img-src 'self' data: https: blob:; "
+                 . "frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com; "
+                 . "connect-src 'self' https://api.razorpay.com https://lumberjack.razorpay.com https://checkout.razorpay.com;";
+            $response->header('Content-Security-Policy', $csp);
             
             if (config('app.env') === 'production') {
                 $response->header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
