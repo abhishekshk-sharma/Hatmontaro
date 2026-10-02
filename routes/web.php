@@ -1,21 +1,21 @@
 <?php
 
+use App\Http\Controllers\AdminAuthController;
+use App\Http\Controllers\AdminBannerController;
+use App\Http\Controllers\AdminCategoryController;
+use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\AdminOrderController;
+use App\Http\Controllers\AdminProductController;
+use App\Http\Controllers\AdminUserController;
+use App\Http\Controllers\AIRecommendationController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CapTryOnController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProductController;
-use App\Http\Controllers\CartController;
-use App\Http\Controllers\AIRecommendationController;
-use App\Http\Controllers\CapTryOnController;
-use App\Http\Controllers\AuthController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\UserCartController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AdminAuthController;
-use App\Http\Controllers\AdminDashboardController;
-use App\Http\Controllers\AdminProductController;
-use App\Http\Controllers\AdminCategoryController;
-use App\Http\Controllers\AdminOrderController;
-use App\Http\Controllers\AdminUserController;
-use App\Http\Controllers\AdminBannerController;
-use App\Http\Controllers\SitemapController;
 
 // All web routes with CSRF protection
 Route::middleware(['web'])->group(function () {
@@ -65,25 +65,25 @@ Route::middleware(['web'])->group(function () {
     Route::post('/cart/clear', [CartController::class, 'clear'])->name('cart.clear');
 
     // User Cart & Profile
-    Route::middleware('auth')->group(function() {
+    Route::middleware('auth')->group(function () {
         Route::get('/my-cart', [UserCartController::class, 'index'])->name('user.cart');
         Route::post('/my-cart/add/{product}', [UserCartController::class, 'add'])->name('user.cart.add');
         Route::put('/my-cart/{id}', [UserCartController::class, 'update'])->name('user.cart.update');
         Route::delete('/my-cart/{id}', [UserCartController::class, 'remove'])->name('user.cart.remove');
         Route::post('/my-cart/{id}/save-later', [UserCartController::class, 'saveForLater'])->name('user.cart.saveForLater');
-        
+
         Route::get('/profile', [\App\Http\Controllers\UserProfileController::class, 'show'])->name('user.profile');
         Route::put('/profile', [\App\Http\Controllers\UserProfileController::class, 'update'])->name('user.profile.update');
         Route::put('/profile/password', [\App\Http\Controllers\UserProfileController::class, 'updatePassword'])->name('user.profile.password');
         Route::get('/orders', [\App\Http\Controllers\UserProfileController::class, 'allOrders'])->name('user.orders.all');
         Route::get('/orders/{order}', [\App\Http\Controllers\UserProfileController::class, 'viewOrder'])->name('user.orders.view');
-        
+
         // Complaints
         Route::get('/complaints', [\App\Http\Controllers\ComplaintController::class, 'index'])->name('user.complaints.index');
         Route::get('/complaints/create', [\App\Http\Controllers\ComplaintController::class, 'create'])->name('user.complaints.create');
         Route::post('/complaints', [\App\Http\Controllers\ComplaintController::class, 'store'])->name('user.complaints.store');
         Route::get('/complaints/{complaint}', [\App\Http\Controllers\ComplaintController::class, 'show'])->name('user.complaints.show');
-        
+
         // Wishlist
         Route::get('/wishlist', [\App\Http\Controllers\WishlistController::class, 'index'])->name('wishlist.index');
         Route::post('/wishlist/add/{product}', [\App\Http\Controllers\WishlistController::class, 'add'])->name('wishlist.add');
@@ -92,7 +92,7 @@ Route::middleware(['web'])->group(function () {
     });
 
     // Checkout with enhanced security
-    Route::middleware(['auth', 'enhanced.payment.security'])->group(function() {
+    Route::middleware(['auth', 'enhanced.payment.security'])->group(function () {
         Route::get('/checkout', [\App\Http\Controllers\CheckoutController::class, 'index'])->name('checkout');
         Route::post('/checkout/process', [\App\Http\Controllers\CheckoutController::class, 'process'])
             ->middleware('throttle:3,1')
@@ -112,17 +112,17 @@ Route::middleware(['web'])->group(function () {
     Route::post('/contact', [\App\Http\Controllers\PageController::class, 'contactSubmit'])->name('contact.submit');
 
     // Test route to check configuration
-    Route::get('/test-config', function() {
+    Route::get('/test-config', function () {
         return response()->json([
             'session_driver' => config('session.driver'),
             'cache_driver' => config('cache.default'),
             'db_username' => config('database.connections.mysql.username'),
-            'app_env' => config('app.env')
+            'app_env' => config('app.env'),
         ]);
     });
 
     // Debug routes
-    Route::get('/debug', function() {
+    Route::get('/debug', function () {
         return response()->json([
             'status' => 'ok',
             'routes' => [
@@ -130,23 +130,25 @@ Route::middleware(['web'])->group(function () {
                 'products.index' => route('products.index'),
                 'products.aiRecommended' => route('products.aiRecommended'),
                 'cart.index' => route('cart.index'),
-            ]
+            ],
         ]);
     });
 
     // Storage symlink route for hosting
-    Route::get('/create-storage-link', function() {
-        if (!file_exists(public_path('storage'))) {
+    Route::get('/create-storage-link', function () {
+        if (! file_exists(public_path('storage'))) {
             $target = storage_path('app/public');
             $link = public_path('storage');
-            
+
             if (function_exists('symlink')) {
                 symlink($target, $link);
+
                 return 'Storage symlink created successfully!';
             } else {
                 return 'Symlink function not available. Contact hosting support.';
             }
         }
+
         return 'Storage symlink already exists!';
     });
 
@@ -158,15 +160,14 @@ Route::post('/payment/webhook', [\App\Http\Controllers\CheckoutController::class
     ->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class])
     ->name('payment.webhook');
 
-// Admin routes with CSRF protection (VerifyCsrfToken included in web middleware group)
-Route::middleware(['web'])->prefix('admin')->name('admin.')->group(function () {
+Route::prefix('admin')->name('admin.')->group(function () {
     // Auth (no additional middleware)
     Route::get('register', [AdminAuthController::class, 'showRegister'])->name('register');
     Route::post('register', [AdminAuthController::class, 'register']);
     Route::get('login', [AdminAuthController::class, 'showLogin'])->name('login');
     Route::post('login', [AdminAuthController::class, 'login']);
     Route::post('logout', [AdminAuthController::class, 'logout'])->name('logout');
-    
+
     // Admin Password Reset Routes
     Route::get('forgot-password', [\App\Http\Controllers\AdminForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
     Route::post('forgot-password', [\App\Http\Controllers\AdminForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
@@ -186,7 +187,7 @@ Route::middleware(['web'])->prefix('admin')->name('admin.')->group(function () {
         Route::put('products/{product}', [AdminProductController::class, 'update'])->name('products.update');
         Route::delete('products/{product}', [AdminProductController::class, 'destroy'])->name('products.destroy');
         Route::delete('products/media/{id}', [AdminProductController::class, 'deleteMedia'])->name('products.media.delete');
-        
+
         // Categories CRUD
         Route::get('categories', [AdminCategoryController::class, 'index'])->name('categories.index');
         Route::get('categories/create', [AdminCategoryController::class, 'create'])->name('categories.create');
@@ -194,18 +195,18 @@ Route::middleware(['web'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('categories/{category}/edit', [AdminCategoryController::class, 'edit'])->name('categories.edit');
         Route::put('categories/{category}', [AdminCategoryController::class, 'update'])->name('categories.update');
         Route::delete('categories/{category}', [AdminCategoryController::class, 'destroy'])->name('categories.destroy');
-        
+
         // Orders Management
         Route::get('orders', [AdminOrderController::class, 'index'])->name('orders.index');
         Route::get('orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
         Route::put('orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
         Route::delete('orders/{order}', [AdminOrderController::class, 'destroy'])->name('orders.destroy');
-        
+
         // Users Management
         Route::get('users', [AdminUserController::class, 'index'])->name('users.index');
         Route::get('users/{user}', [AdminUserController::class, 'show'])->name('users.show');
         Route::delete('users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
-        
+
         // Banners Management
         Route::get('banners', [AdminBannerController::class, 'index'])->name('banners.index');
         Route::get('banners/create', [AdminBannerController::class, 'create'])->name('banners.create');
@@ -214,20 +215,20 @@ Route::middleware(['web'])->prefix('admin')->name('admin.')->group(function () {
         Route::put('banners/{banner}', [AdminBannerController::class, 'update'])->name('banners.update');
         Route::delete('banners/{banner}', [AdminBannerController::class, 'destroy'])->name('banners.destroy');
         Route::put('banners/{banner}/toggle', [AdminBannerController::class, 'toggleStatus'])->name('banners.toggleStatus');
-        
+
         // Hero Banners Management
         Route::resource('hero-banners', \App\Http\Controllers\AdminHeroBannerController::class);
-        
+
         // Contact Messages Management
         Route::get('contacts', [\App\Http\Controllers\AdminContactController::class, 'index'])->name('contacts.index');
         Route::get('contacts/{contact}', [\App\Http\Controllers\AdminContactController::class, 'show'])->name('contacts.show');
         Route::post('contacts/{contact}/respond', [\App\Http\Controllers\AdminContactController::class, 'respond'])->name('contacts.respond');
-        
+
         // Complaints Management
         Route::get('complaints', [\App\Http\Controllers\AdminComplaintController::class, 'index'])->name('complaints.index');
         Route::get('complaints/{complaint}', [\App\Http\Controllers\AdminComplaintController::class, 'show'])->name('complaints.show');
         Route::put('complaints/{complaint}', [\App\Http\Controllers\AdminComplaintController::class, 'updateStatus'])->name('complaints.update');
-        
+
         // About Us Management
         Route::get('about', [\App\Http\Controllers\Admin\AboutUsController::class, 'index'])->name('about.index');
         Route::get('about/section/{id}/edit', [\App\Http\Controllers\Admin\AboutUsController::class, 'editSection'])->name('about.section.edit');
@@ -238,12 +239,12 @@ Route::middleware(['web'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('about/team/{id}/edit', [\App\Http\Controllers\Admin\AboutUsController::class, 'teamEdit'])->name('about.team.edit');
         Route::put('about/team/{id}', [\App\Http\Controllers\Admin\AboutUsController::class, 'teamUpdate'])->name('about.team.update');
         Route::delete('about/team/{id}', [\App\Http\Controllers\Admin\AboutUsController::class, 'teamDestroy'])->name('about.team.destroy');
-        
+
         // Page Banners Management
         Route::get('page-banners', [\App\Http\Controllers\Admin\PageBannerController::class, 'index'])->name('page-banners.index');
         Route::get('page-banners/{pageBanner}/edit', [\App\Http\Controllers\Admin\PageBannerController::class, 'edit'])->name('page-banners.edit');
         Route::put('page-banners/{pageBanner}', [\App\Http\Controllers\Admin\PageBannerController::class, 'update'])->name('page-banners.update');
-        
+
         // Reports & Analytics
         Route::get('reports', [\App\Http\Controllers\Admin\ReportController::class, 'index'])->name('reports.index');
         Route::get('reports/export', [\App\Http\Controllers\Admin\ReportController::class, 'export'])->name('reports.export');

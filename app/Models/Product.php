@@ -44,10 +44,28 @@ class Product extends Model
         if (str_starts_with($value, 'http')) {
             return $value;
         }
+
+        // Automatic mapping of legacy /storage/products/ to /images/products/
+        if (str_starts_with($value, '/storage/products/')) {
+            $filename = basename($value);
+            $newRelPath = '/images/products/' . $filename;
+            $newFullPath = public_path('images/products/' . $filename);
+            $oldFullPath = public_path('storage/products/' . $filename);
+
+            // Copy file over if it exists in legacy storage but not yet in images/products
+            if (!file_exists($newFullPath) && file_exists($oldFullPath)) {
+                $dir = dirname($newFullPath);
+                if (!file_exists($dir)) {
+                    @mkdir($dir, 0755, true);
+                }
+                @copy($oldFullPath, $newFullPath);
+            }
+
+            return $newRelPath;
+        }
         
-        // If it starts with /storage/, convert to direct path for hosting
+        // If it starts with /storage/, convert to direct path for hosting if symlink missing
         if (str_starts_with($value, '/storage/')) {
-            // Check if symlink exists, if not use direct path
             if (!file_exists(public_path('storage'))) {
                 return str_replace('/storage/', '/storage/app/public/', $value);
             }

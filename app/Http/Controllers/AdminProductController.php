@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductMedia;
-use App\Models\Category;
 use Illuminate\Http\Request;
 
 class AdminProductController extends Controller
@@ -12,13 +12,75 @@ class AdminProductController extends Controller
     // Auth is handled by route middleware (AdminAuth)
     public function index()
     {
+        // Auto-migrate any legacy files from public/storage/products to public/images/products
+        $sourceDir = public_path('storage/products');
+        $targetDir = public_path('images/products');
+        if (is_dir($sourceDir)) {
+            if (!is_dir($targetDir)) {
+                @mkdir($targetDir, 0755, true);
+            }
+            $files = @glob($sourceDir . '/*');
+            if ($files) {
+                foreach ($files as $file) {
+                    if (is_file($file)) {
+                        $dest = $targetDir . '/' . basename($file);
+                        if (!file_exists($dest)) {
+                            @copy($file, $dest);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Also copy any stray files from temporary test folders to images/products
+        foreach (['images/men', 'images/Uncategorized'] as $stray) {
+            $strayPath = public_path($stray);
+            if (is_dir($strayPath)) {
+                $strayFiles = @glob($strayPath . '/*');
+                if ($strayFiles) {
+                    foreach ($strayFiles as $sf) {
+                        if (is_file($sf)) {
+                            $dest = $targetDir . '/' . basename($sf);
+                            if (!file_exists($dest)) {
+                                @copy($sf, $dest);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Migrate DB rows from /storage/products/ to /images/products/
+        try {
+            Product::where('image_url', 'like', '/storage/products/%')->chunk(50, function ($prods) {
+                foreach ($prods as $prod) {
+                    $prod->timestamps = false;
+                    $prod->image_url = str_replace('/storage/products/', '/images/products/', $prod->getRawOriginal('image_url'));
+                    $prod->save();
+                }
+            });
+            Product::where('image_url', 'like', '/images/men/%')
+                ->orWhere('image_url', 'like', '/images/Uncategorized/%')
+                ->chunk(50, function ($prods) {
+                    foreach ($prods as $prod) {
+                        $prod->timestamps = false;
+                        $prod->image_url = '/images/products/' . basename($prod->getRawOriginal('image_url'));
+                        $prod->save();
+                    }
+                });
+        } catch (\Exception $e) {
+            \Log::warning('Product image_url DB migration notice: ' . $e->getMessage());
+        }
+
         $products = Product::with('category')->paginate(20);
+
         return view('admin.products.index', compact('products'));
     }
 
     public function create()
     {
         $categories = Category::all();
+
         return view('admin.products.create', compact('categories'));
     }
 
@@ -31,11 +93,12 @@ class AdminProductController extends Controller
 
         $data = $request->validate([
             'name' => 'required|string|max:255',
+            'brand' => 'nullable|string|max:100',
             'slug' => 'required|string|unique:products,slug',
             'description' => 'nullable|string',
             'price' => 'required|numeric',
             'category_id' => 'nullable|exists:categories,id',
-            'image' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg|max:5120',
+            'image' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,webp|max:5120',
             'is_featured' => 'nullable|boolean',
             'is_ai_recommended' => 'nullable|boolean',
             'is_premium_delivery' => 'nullable|boolean',
@@ -45,78 +108,81 @@ class AdminProductController extends Controller
         // ensure category exists (products.category_id is NOT NULL in migration)
         if (empty($data['category_id'])) {
             $defaultCat = Category::firstOrCreate([
-                'slug' => 'uncategorized'
+                'slug' => 'uncategorized',
             ], [
-                'name' => 'Uncategorized'
+                'name' => 'Uncategorized',
             ]);
             $data['category_id'] = $defaultCat->id;
         }
 
-        // set defaults for DB-required columns in migration
+        $category = Category::find($data['category_id']);
+
+        // set defaults for DB-required columns in migration (prevent NULL constraint violations)
         $data['description'] = $data['description'] ?? '';
-        $data['style_type'] = $request->get('style_type', 'casual');
-        $data['occasion'] = $request->get('occasion', 'casual');
-        $data['color'] = $request->get('color', 'unknown');
-        $data['stock_quantity'] = (int) $request->get('stock_quantity', 0);
-        $data['compare_price'] = $request->get('compare_price');
+        $data['style_type'] = $request->filled('style_type') ? $request->input('style_type') : 'casual';
+        $data['occasion'] = $request->filled('occasion') ? $request->input('occasion') : 'casual';
+        $data['color'] = $request->filled('color') ? $request->input('color') : 'unknown';
+        $data['brand'] = $request->filled('brand') ? $request->input('brand') : null;
+        $data['stock_quantity'] = (int) ($request->input('stock_quantity') ?? 0);
+        $data['compare_price'] = $request->filled('compare_price') ? $request->input('compare_price') : null;
         $data['is_premium_delivery'] = $request->boolean('is_premium_delivery');
         $data['delivery_time'] = $request->filled('delivery_time') ? $request->input('delivery_time') : 'Tomorrow, 2 PM';
 
         if ($request->hasFile('image')) {
             $file = $request->file('image');
             try {
-                if (!$file->isValid()) {
+                if (! $file->isValid()) {
                     \Log::error('Product image upload not valid', ['error' => $file->getError()]);
+
                     return back()->withInput()->withErrors(['image' => 'The uploaded image is not valid.']);
                 }
-                
-                // Check if it's SVG for caps
-                $extension = $file->getClientOriginalExtension();
-                if ($extension === 'svg') {
-                    // Store SVG in caps folder
-                    $filename = time() . '_' . $file->getClientOriginalName();
-                    $file->move(public_path('images/caps'), $filename);
-                    $data['image_url'] = '/images/caps/' . $filename;
-                } else {
-                    // Store regular images directly in public/storage/products
-                    $filename = time() . '_' . $file->getClientOriginalName();
-                    $destinationPath = public_path('storage/products');
-                    
-                    // Ensure directory exists
-                    if (!file_exists($destinationPath)) {
-                        mkdir($destinationPath, 0755, true);
-                    }
-                    
-                    $success = $file->move($destinationPath, $filename);
-                    if (!$success) {
-                        \Log::error('Failed to store uploaded image', ['file' => $file->getClientOriginalName()]);
-                        return back()->withInput()->withErrors(['image' => 'The image failed to upload.']);
-                    }
-                    $data['image_url'] = '/storage/products/' . $filename;
+
+                $extension = strtolower($file->getClientOriginalExtension());
+                $filename = time() . '_' . preg_replace('/[^a-zA-Z0-9_\.-]/', '_', $file->getClientOriginalName());
+
+                // SVG or caps category go to images/caps, all regular products go to images/products
+                $isCap = ($category && $category->slug === 'caps') || $extension === 'svg';
+                $folder = $isCap ? 'images/caps' : 'images/products';
+                $destinationPath = public_path($folder);
+
+                if (! file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
                 }
+
+                $success = $file->move($destinationPath, $filename);
+                if (! $success) {
+                    \Log::error('Failed to store uploaded image', ['file' => $file->getClientOriginalName()]);
+
+                    return back()->withInput()->withErrors(['image' => 'The image failed to upload.']);
+                }
+
+                $data['image_url'] = '/' . $folder . '/' . $filename;
             } catch (\Exception $e) {
                 \Log::error('Exception while storing product image', ['message' => $e->getMessage()]);
-                return back()->withInput()->withErrors(['image' => 'The image failed to upload.']);
+
+                return back()->withInput()->withErrors(['image' => 'The image failed to upload: ' . $e->getMessage()]);
             }
         } else {
-            $data['image_url'] = $data['image_url'] ?? '/storage/placeholder.png';
+            $data['image_url'] = $data['image_url'] ?? '/images/products/placeholder.png';
         }
 
-        $data['is_featured'] = $request->has('is_featured');
-        $data['is_ai_recommended'] = $request->has('is_ai_recommended');
+        $data['is_featured'] = $request->boolean('is_featured');
+        $data['is_ai_recommended'] = $request->boolean('is_ai_recommended');
 
         try {
             $product = Product::create($data);
-            
+
             // Handle multiple media files
             if ($request->hasFile('media')) {
                 $this->handleMediaUpload($request->file('media'), $product);
             }
-            
+
             \Log::info('Product created successfully');
+
             return redirect()->route('admin.products.index')->with('success', 'Product created');
         } catch (\Exception $e) {
             \Log::error('Failed to create product', ['error' => $e->getMessage()]);
+
             return back()->withInput()->withErrors(['error' => 'Failed to create product: ' . $e->getMessage()]);
         }
     }
@@ -125,6 +191,7 @@ class AdminProductController extends Controller
     {
         \Log::info('AdminProductController::edit() called', ['product_id' => $product->id]);
         $categories = Category::all();
+
         return view('admin.products.edit', compact('product', 'categories'));
     }
 
@@ -140,11 +207,12 @@ class AdminProductController extends Controller
         // Use manual Validator so we can log validation failures
         $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'name' => 'required|string|max:255',
+            'brand' => 'nullable|string|max:100',
             'slug' => "required|string|unique:products,slug,{$product->id}",
             'description' => 'nullable|string',
             'price' => 'required|numeric',
             'category_id' => 'nullable|exists:categories,id',
-            'image' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg|max:5120',
+            'image' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,webp|max:5120',
             'is_featured' => 'nullable|boolean',
             'is_ai_recommended' => 'nullable|boolean',
             'is_premium_delivery' => 'nullable|boolean',
@@ -156,6 +224,7 @@ class AdminProductController extends Controller
                 'errors' => $validator->errors()->all(),
                 'input' => array_keys($request->except(['_token', '_method', 'image'])),
             ]);
+
             return back()->withInput()->withErrors($validator->errors());
         }
 
@@ -166,19 +235,22 @@ class AdminProductController extends Controller
         // ensure DB-required fields present
         if (empty($data['category_id'])) {
             $defaultCat = Category::firstOrCreate([
-                'slug' => 'uncategorized'
+                'slug' => 'uncategorized',
             ], [
-                'name' => 'Uncategorized'
+                'name' => 'Uncategorized',
             ]);
             $data['category_id'] = $defaultCat->id;
         }
 
+        $category = Category::find($data['category_id']);
+
         $data['description'] = $data['description'] ?? $product->description ?? '';
-        $data['style_type'] = $request->get('style_type', $product->style_type ?? 'casual');
-        $data['occasion'] = $request->get('occasion', $product->occasion ?? 'casual');
-        $data['color'] = $request->get('color', $product->color ?? 'unknown');
-        $data['stock_quantity'] = (int) $request->get('stock_quantity', $product->stock_quantity ?? 0);
-        $data['compare_price'] = $request->get('compare_price', $product->compare_price);
+        $data['style_type'] = $request->filled('style_type') ? $request->input('style_type') : ($product->style_type ?? 'casual');
+        $data['occasion'] = $request->filled('occasion') ? $request->input('occasion') : ($product->occasion ?? 'casual');
+        $data['color'] = $request->filled('color') ? $request->input('color') : ($product->color ?? 'unknown');
+        $data['brand'] = $request->filled('brand') ? $request->input('brand') : ($product->brand ?? null);
+        $data['stock_quantity'] = (int) ($request->input('stock_quantity') ?? $product->stock_quantity ?? 0);
+        $data['compare_price'] = $request->filled('compare_price') ? $request->input('compare_price') : $product->compare_price;
         $data['is_premium_delivery'] = $request->boolean('is_premium_delivery');
         $data['delivery_time'] = $request->filled('delivery_time') ? $request->input('delivery_time') : ($product->delivery_time ?? 'Tomorrow, 2 PM');
 
@@ -191,46 +263,44 @@ class AdminProductController extends Controller
             ]);
 
             try {
-                if (!$file->isValid()) {
+                if (! $file->isValid()) {
                     \Log::error('Product image upload not valid (update)', ['error' => $file->getError()]);
+
                     return back()->withInput()->withErrors(['image' => 'The uploaded image is not valid.']);
                 }
-                
-                // Check if it's SVG for caps
-                $extension = $file->getClientOriginalExtension();
-                if ($extension === 'svg') {
-                    // Store SVG in caps folder
-                    $filename = time() . '_' . $file->getClientOriginalName();
-                    $file->move(public_path('images/caps'), $filename);
-                    $data['image_url'] = '/images/caps/' . $filename;
-                } else {
-                    // Store regular images directly in public/storage/products
-                    $filename = time() . '_' . $file->getClientOriginalName();
-                    $destinationPath = public_path('storage/products');
-                    
-                    // Ensure directory exists
-                    if (!file_exists($destinationPath)) {
-                        mkdir($destinationPath, 0755, true);
-                    }
-                    
-                    $success = $file->move($destinationPath, $filename);
-                    if (!$success) {
-                        \Log::error('Failed to store uploaded image (update)', ['file' => $file->getClientOriginalName()]);
-                        return back()->withInput()->withErrors(['image' => 'The image failed to upload.']);
-                    }
-                    $data['image_url'] = '/storage/products/' . $filename;
+
+                $extension = strtolower($file->getClientOriginalExtension());
+                $filename = time() . '_' . preg_replace('/[^a-zA-Z0-9_\.-]/', '_', $file->getClientOriginalName());
+
+                // SVG or caps category go to images/caps, regular products to images/products
+                $isCap = ($category && $category->slug === 'caps') || $extension === 'svg';
+                $folder = $isCap ? 'images/caps' : 'images/products';
+                $destinationPath = public_path($folder);
+
+                if (! file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
                 }
+
+                $success = $file->move($destinationPath, $filename);
+                if (! $success) {
+                    \Log::error('Failed to store uploaded image (update)', ['file' => $file->getClientOriginalName()]);
+
+                    return back()->withInput()->withErrors(['image' => 'The image failed to upload.']);
+                }
+
+                $data['image_url'] = '/' . $folder . '/' . $filename;
                 \Log::info('Image stored successfully in update', ['path' => $data['image_url']]);
             } catch (\Exception $e) {
                 \Log::error('Exception while storing product image (update)', ['message' => $e->getMessage()]);
-                return back()->withInput()->withErrors(['image' => 'The image failed to upload.']);
+
+                return back()->withInput()->withErrors(['image' => 'The image failed to upload: ' . $e->getMessage()]);
             }
         } else {
             \Log::info('No image file in update request');
         }
 
-        $data['is_featured'] = $request->has('is_featured');
-        $data['is_ai_recommended'] = $request->has('is_ai_recommended');
+        $data['is_featured'] = $request->boolean('is_featured');
+        $data['is_ai_recommended'] = $request->boolean('is_ai_recommended');
 
         \Log::info('About to update product', [
             'product_id' => $product->id,
@@ -240,22 +310,24 @@ class AdminProductController extends Controller
 
         try {
             $product->update($data);
-            
+
             // Handle multiple media files
             if ($request->hasFile('media')) {
                 $this->handleMediaUpload($request->file('media'), $product);
             }
-            
+
             \Log::info('Product updated successfully', [
                 'product_id' => $product->id,
                 'new_name' => $data['name'],
             ]);
+
             return redirect()->route('admin.products.index')->with('success', 'Product updated');
         } catch (\Exception $e) {
             \Log::error('Failed to update product', [
                 'product_id' => $product->id,
                 'error' => $e->getMessage(),
             ]);
+
             return back()->withInput()->withErrors(['error' => 'Failed to update product: ' . $e->getMessage()]);
         }
     }
@@ -263,6 +335,7 @@ class AdminProductController extends Controller
     public function destroy(Product $product)
     {
         $product->delete();
+
         return redirect()->route('admin.products.index')->with('success', 'Product deleted');
     }
 
@@ -270,25 +343,27 @@ class AdminProductController extends Controller
     {
         $categorySlug = $product->category->slug ?? 'uncategorized';
         $order = $product->media()->count();
-        
+
         foreach ($files as $file) {
-            if (!$file->isValid()) continue;
-            
+            if (! $file->isValid()) {
+                continue;
+            }
+
             $extension = strtolower($file->getClientOriginalExtension());
             $isVideo = in_array($extension, ['mp4', 'webm', 'mov']);
             $type = $isVideo ? 'video' : 'image';
-            
+
             $folder = $isVideo ? "media/{$categorySlug}/videos" : "media/{$categorySlug}/images";
-            $filename = time() . '_' . uniqid() . '.' . $extension;
-            $path = $folder . '/' . $filename;
-            
+            $filename = time().'_'.uniqid().'.'.$extension;
+            $path = $folder.'/'.$filename;
+
             $file->move(public_path($folder), $filename);
-            
+
             ProductMedia::create([
                 'product_id' => $product->id,
-                'file_path' => '/' . $path,
+                'file_path' => '/'.$path,
                 'type' => $type,
-                'order' => $order++
+                'order' => $order++,
             ]);
         }
     }
@@ -300,6 +375,7 @@ class AdminProductController extends Controller
             unlink(public_path($media->file_path));
         }
         $media->delete();
+
         return response()->json(['success' => true]);
     }
 }

@@ -16,7 +16,7 @@
     <div class="row">
         <!-- Product Images -->
         <div class="col-lg-6">
-            <div class="card border-0 shadow-sm position-relative" id="productImageCard">
+            <div class="card border-0 shadow-sm position-relative d-flex align-items-center justify-content-center bg-white" id="productImageCard" style="height: 500px; overflow: hidden;">
                 @php
                     $img = $product->image_url;
                     if (!\Illuminate\Support\Str::startsWith($img, ['http://','https://','/'])) {
@@ -25,21 +25,23 @@
                     $isVideo = false;
                 @endphp
                 
-                @if($isVideo)
-                    <video id="productVideo" class="card-img-top rounded" controls style="max-height: 500px; width:100%;">
-                        <source src="{{ $img }}" type="video/mp4">
-                    </video>
-                @else
-                    <img src="{{ $img }}" 
-                         id="productImage"
-                         class="card-img-top rounded" 
-                         alt="{{ $product->name }}"
-                         style="max-height: 500px; object-fit: cover; cursor: zoom-in;"
-                         onclick="openImageModal()">
-                @endif
+                <div id="mediaContainer" class="w-100 h-100 d-flex align-items-center justify-content-center p-2">
+                    @if($isVideo)
+                        <video id="productVideo" class="rounded" controls style="max-height: 100%; max-width: 100%; width: auto; height: auto; object-fit: contain;">
+                            <source src="{{ $img }}" type="video/mp4">
+                        </video>
+                    @else
+                        <img src="{{ $img }}" 
+                             id="productImage"
+                             class="rounded" 
+                             alt="{{ $product->name }}"
+                             style="max-height: 100%; max-width: 100%; width: auto; height: auto; object-fit: contain; cursor: zoom-in;"
+                             onclick="openImageModal()">
+                    @endif
+                </div>
                 
                 @if($product->is_ai_recommended)
-                    <div class="position-absolute top-0 end-0 m-3" style="z-index:10">
+                    <div class="position-absolute top-0 end-0 m-3" style="z-index:10; pointer-events: none;">
                         <div class="bg-primary text-white px-3 py-1 rounded-pill">
                             <i class="bi bi-robot me-1"></i> AI Recommended
                         </div>
@@ -60,13 +62,13 @@
                 <div class="row g-2">
                     @foreach($allMedia as $index => $media)
                     <div class="col-2">
-                        <div class="card media-thumb {{ $index === 0 ? 'border-primary' : '' }}" 
-                             style="cursor:pointer;" 
+                        <div class="card media-thumb {{ $index === 0 ? 'border-primary' : '' }} p-1 bg-white d-flex align-items-center justify-content-center" 
+                             style="cursor:pointer; height: 65px;" 
                              onclick="changeMedia('{{ $media->url }}', '{{ $media->type }}', this)">
                             @if($media->type === 'video')
-                                <video src="{{ $media->url }}" class="card-img-top" style="height:60px;object-fit:cover;"></video>
+                                <video src="{{ $media->url }}" class="rounded" style="max-height: 100%; max-width: 100%; object-fit: contain;"></video>
                             @else
-                                <img src="{{ $media->url }}" class="card-img-top" style="height:60px;object-fit:cover;" />
+                                <img src="{{ $media->url }}" class="rounded" style="max-height: 100%; max-width: 100%; object-fit: contain;" />
                             @endif
                         </div>
                     </div>
@@ -292,10 +294,10 @@
                             <div class="d-grid gap-2">
                                 @foreach($allMedia as $index => $media)
                                 @if($media->type === 'image')
-                                <div class="modal-thumb {{ $index === 0 ? 'border-primary' : '' }}" 
-                                     style="cursor:pointer; border: 2px solid transparent;" 
+                                <div class="modal-thumb {{ $index === 0 ? 'border-primary' : '' }} p-1 bg-white d-flex align-items-center justify-content-center" 
+                                     style="cursor:pointer; border: 2px solid transparent; height: 80px;" 
                                      onclick="changeModalImage('{{ $media->url }}', this)">
-                                    <img src="{{ $media->url }}" class="w-100 rounded" style="height:80px;object-fit:cover;" />
+                                    <img src="{{ $media->url }}" class="rounded" style="max-height: 100%; max-width: 100%; object-fit: contain;" />
                                 </div>
                                 @endif
                                 @endforeach
@@ -320,15 +322,15 @@ function changeMedia(url, type, element) {
     // Add active class to clicked thumbnail
     element.classList.add('border-primary');
     
-    const card = document.getElementById('productImageCard');
+    const container = document.getElementById('mediaContainer') || document.getElementById('productImageCard');
     if (type === 'video') {
-        card.innerHTML = `<video id="productVideo" class="card-img-top rounded" controls style="max-height: 500px; width:100%;"><source src="${url}" type="video/mp4"></video>`;
+        container.innerHTML = `<video id="productVideo" class="rounded" controls style="max-height: 100%; max-width: 100%; width: auto; height: auto; object-fit: contain;"><source src="${url}" type="video/mp4"></video>`;
     } else {
-        card.innerHTML = `
+        container.innerHTML = `
             <img src="${url}" 
                  id="productImage" 
-                 class="card-img-top rounded" 
-                 style="max-height: 500px; object-fit: cover; cursor: zoom-in;"
+                 class="rounded" 
+                 style="max-height: 100%; max-width: 100%; width: auto; height: auto; object-fit: contain; cursor: zoom-in;"
                  onclick="openImageModal()"
                  alt="{{ $product->name }}">
         `;

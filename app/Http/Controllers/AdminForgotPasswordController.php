@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
-use App\Models\Admin;
 
 class AdminForgotPasswordController extends Controller
 {
@@ -20,7 +20,7 @@ class AdminForgotPasswordController extends Controller
     public function sendResetLinkEmail(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'email' => 'required|email|exists:admins,email'
+            'email' => 'required|email|exists:admins,email',
         ]);
 
         if ($validator->fails()) {
@@ -34,17 +34,17 @@ class AdminForgotPasswordController extends Controller
             [
                 'email' => $request->email,
                 'token' => Hash::make($token),
-                'created_at' => now()
+                'created_at' => now(),
             ]
         );
 
         // Send email
-        $resetUrl = url('/admin/password/reset/' . $token . '?email=' . urlencode($request->email));
-        
+        $resetUrl = url('/admin/password/reset/'.$token.'?email='.urlencode($request->email));
+
         try {
             Mail::send('emails.admin-password-reset', [
                 'resetUrl' => $resetUrl,
-                'email' => $request->email
+                'email' => $request->email,
             ], function ($message) use ($request) {
                 $message->to($request->email);
                 $message->subject('Admin Password Reset Request');
@@ -60,7 +60,7 @@ class AdminForgotPasswordController extends Controller
     {
         return view('admin.auth.reset-password')->with([
             'token' => $token,
-            'email' => $request->email
+            'email' => $request->email,
         ]);
     }
 
@@ -80,7 +80,7 @@ class AdminForgotPasswordController extends Controller
             ->where('email', $request->email)
             ->first();
 
-        if (!$passwordReset || !Hash::check($request->token, $passwordReset->token)) {
+        if (! $passwordReset || ! Hash::check($request->token, $passwordReset->token)) {
             return back()->withErrors(['email' => 'Invalid reset token.']);
         }
 
@@ -92,7 +92,7 @@ class AdminForgotPasswordController extends Controller
         // Update admin password
         $admin = Admin::where('email', $request->email)->first();
         $admin->update([
-            'password' => Hash::make($request->password)
+            'password' => Hash::make($request->password),
         ]);
 
         // Delete the reset token

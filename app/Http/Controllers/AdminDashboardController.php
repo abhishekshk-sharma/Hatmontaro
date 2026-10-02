@@ -2,24 +2,23 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Product;
 use App\Models\Category;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\User;
 use App\Models\Visitor;
-use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
 class AdminDashboardController extends Controller
 {
     public function index()
     {
+        // return 'hello';
         $today = Carbon::today();
         $yesterday = Carbon::yesterday();
         $thisWeek = Carbon::now()->startOfWeek();
         $thisMonth = Carbon::now()->startOfMonth();
-        
+
         $stats = [
             'total_products' => Product::count(),
             'total_categories' => Category::count(),

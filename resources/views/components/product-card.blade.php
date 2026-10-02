@@ -2,6 +2,7 @@
 
 @php
     $img = $product->image_url;
+    
     if ($img && !\Illuminate\Support\Str::startsWith($img, ['http://', 'https://', '/storage/', 'data:'])) {
         $img = asset($img);
     }

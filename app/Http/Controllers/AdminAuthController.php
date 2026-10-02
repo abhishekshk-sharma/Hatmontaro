@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Admin;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class AdminAuthController extends Controller
@@ -34,28 +35,54 @@ class AdminAuthController extends Controller
 
     public function showLogin()
     {
+
         return view('admin.auth.login');
     }
 
     public function login(Request $request)
     {
         $data = $request->validate([
-            'email' => 'required|email',
+            'name' => 'required',
             'password' => 'required',
         ]);
 
-        $admin = Admin::where('email', $data['email'])->first();
-        if (!$admin || !Hash::check($data['password'], $admin->password)) {
-            return back()->withErrors(['email' => 'Invalid credentials'])->withInput();
+        // $admin = Admin::where('email', $data['email'])->first();
+
+        // if (! $admin) {
+        //     return back()->withErrors(['error' => 'invalid credetial']);
+        // }
+
+        // if (Hash::check($data['password'], $admin->password)) {
+        //     session()->put('admin_id', $admin->id);
+
+        //     return redirect()->route('admin.dashboard');
+        // }
+
+        try {
+
+            if (Auth::guard('admin')->attempt($data)) {
+                $request->session()->regenerate();
+
+                // return 'success1';
+
+                return redirect()->route('admin.dashboard');
+            }
+        } catch (\Exception $e) {
+            return $e->getMessage();
         }
 
-        session(['admin_id' => $admin->id]);
-        return redirect()->route('admin.dashboard');
+        return back()->withErrors(['error' => 'invalid credetial']);
+
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
-        session()->forget('admin_id');
+
+        Auth::guard('admin')->logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
         return redirect()->route('admin.login');
     }
 }
